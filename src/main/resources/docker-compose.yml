@@ -1,0 +1,93 @@
+version: '3.3'
+services:
+  redis:
+    image: redis:latest
+    container_name: sg-redis
+    restart: always
+    networks:
+      - sg-net
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+  zookeeper:
+    image: zookeeper:3.4.9
+    container_name: sg-zk
+    restart: always
+    networks:
+      - sg-net
+    ports:
+      - "2181:2181"
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_PORT: 2181
+      ZOO_SERVERS: server.1=zookeeper:2888:3888
+    volumes:
+      - zk-data:/data
+      - zk-log:/datalog
+  kafka1:
+    image: confluentinc/cp-kafka:5.5.1
+    container_name: sg-kafka
+    restart: always
+    networks:
+      - sg-net
+    ports:
+      - "9092:9092"
+      - "9999:9999"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka1:19092,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zoo1:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    depends_on:
+      - zookeeper
+  pulsar:
+    image: "apachepulsar/pulsar:2.6.0"
+    container_name: sg-pulsar
+    command: bin/pulsar standalone
+    restart: always
+    networks:
+      - sg-net
+    ports:
+      - "6650:6650"
+      - "8080:8080"
+    volumes:
+      - pulsar-data:/pulsar/data
+      - pulsar-conf:/pulsar/conf
+  pulsar-manager:
+    image: "apachepulsar/pulsar-manager:v0.2.0"
+    container_name: sg-pulsar-manager
+    restart: always
+    networks:
+      - sg-net
+    ports:
+      - "9527:9527"
+      - "7750:7750"
+    depends_on:
+      - pulsar
+    links:
+      - pulsar
+    environment:
+      - SPRING_CONFIGURATION_FILE=/pulsar-manager/pulsar-manager/application.properties
+
+volumes:
+  redis-data:
+  pulsar-data:
+  pulsar-conf:
+  zk-data:
+  zk-log:
+  kafka-data:
+
+networks:
+  sg-net:
+    external:
+      name: sg-net

@@ -1,0 +1,11 @@
+server:
+  port: 8086
+pulsar:
+  # pulsar服务端地址
+  url: pulsar://localhost:6650
+  # 多个topic以逗号分隔
+  topic: pulsar-topic
+  # 消费者组
+  subscription: pulsar-topicGroup
+  # 非持久topic
+  # topic: non-persistent://public/default/pulsar-topic
