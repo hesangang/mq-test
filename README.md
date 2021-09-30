@@ -4,7 +4,7 @@
 
 * jdk1.8
 * maven
-* mysql
+* mysql5.7
 * pulsar
 
 
