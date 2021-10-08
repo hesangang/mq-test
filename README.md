@@ -7,7 +7,7 @@
 * mysql5.7
 * pulsar
 * git
-* maven
+* maven3
 
 
 
