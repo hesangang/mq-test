@@ -1,0 +1,222 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: $JOB_NAME
+    qcloud-app: $JOB_NAME
+  name: $JOB_NAME
+  namespace: $NAMESPACE
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 5
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      k8s-app: $JOB_NAME
+      qcloud-app: $JOB_NAME
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/component: springboot
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: "8080"
+        prometheus.io/scrape: "true"
+      labels:
+        k8s-app: $JOB_NAME
+        qcloud-app: $JOB_NAME
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: area
+                operator: In
+                values:
+                - $AREA
+      containers:
+      - name: $JOB_NAME
+        env:
+        - name: PATH
+          value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/app/jre1.8.0_202//bin
+        - name: JAVA_HOME
+          value: /app/jre1.8.0_202/      
+        image: $IMAGE_NAME
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /healthz
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 12
+          successThreshold: 1
+          timeoutSeconds: 5
+        readinessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /healthz
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 12
+          successThreshold: 1
+          timeoutSeconds: 5
+        resources:
+          limits:
+            cpu: "4"
+            memory: 8Gi
+          requests:
+            cpu: "1"
+            memory: 2Gi
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - sleep
+              - "30"
+        securityContext:
+          privileged: false
+        workingDir: /app
+        volumeMounts:
+        - name: java-logs 
+          mountPath: /app/logs
+      - name: filebeat
+        image: "gomezsz-hub.tencentcloudcr.com/ops/filebeat:7.10.2"
+        args: [
+          "-c", "/etc/filebeat.yml",
+          "-e",
+        ]
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 1000m
+            memory: 500Mi
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - name: filebeat-config
+          mountPath: /etc/filebeat.yml
+          subPath: filebeat.yml
+        - name: java-logs 
+          mountPath: /app/logs
+        env:
+        - name: podIp
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: podName
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: podNamespace
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: podDeployName
+          value: $JOB_NAME
+        - name: TZ
+          value: "Asia/Shanghai"
+      dnsPolicy: ClusterFirst
+      volumes:
+      - name: java-logs
+        emptyDir: {}
+      - name: filebeat-config
+        configMap:
+          name: filebeat-java-config
+      imagePullSecrets:
+      - name: tcr.ipstcr-3tra6rp7-public
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 60
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-java-config 
+  namespace: $NAMESPACE
+data:
+  filebeat.yml: |-
+    filebeat.inputs: 
+    - type: log
+      enabled: true
+      fields:
+        service: k8s-sangang-springboot
+        pod_name: '${podName}'
+        pod_ip: '${podIp}'
+        pod_deploy_name: '${podDeployName}' 
+        pod_namespace: '${podNamespace}'
+        pod_idc: $IDC
+      fields_under_root: true
+      ignore_older: "24h"
+      close_*: "23h"
+      scan_frequency: "10s"
+      tail_files: true
+      harvester_buffer_size: 16384
+      backoff: "1s"
+      exclude_lines: ['^$']
+      paths:
+      -
+        "/app/logs/*.log"
+      multiline:
+        pattern: '^20'
+        negate: true
+        match: after
+    output.kafka:
+      enabled: true
+      hosts: ["kafka:9092"]
+      topic: "k8s-sangang-springboot"
+---
+# pod最低预留个数
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    k8s-app: $JOB_NAME
+    qcloud-app: $JOB_NAME
+  name: $JOB_NAME
+  namespace: $NAMESPACE
+spec:
+  selector:
+    matchLabels:
+      k8s-app: $JOB_NAME
+      qcloud-app: $JOB_NAME
+  minAvailable: 2
+---
+# 自动伸缩
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    k8s-app: $JOB_NAME
+    qcloud-app: $JOB_NAME
+  name: $JOB_NAME
+  namespace: $NAMESPACE
+spec:
+  minReplicas: 5
+  maxReplicas: 20
+  metrics:
+  - pods:
+      metricName: k8s_pod_rate_cpu_core_used_limit
+      targetAverageValue: "65"
+    type: Pods
+  - pods:
+      metricName: k8s_pod_rate_mem_no_cache_limit
+      targetAverageValue: "65"
+    type: Pods
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: $JOB_NAME
