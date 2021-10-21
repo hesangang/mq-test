@@ -4,7 +4,3 @@ spring:
   profiles:
     active: dev
 
-system:
-  global-request-handler-controller:
-    after-body-read:
-      validate-or-not: false
