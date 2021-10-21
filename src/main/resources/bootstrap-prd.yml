@@ -3,7 +3,7 @@ logging:
   config: classpath:log4j2-prd.xml
 spring:
   application:
-    name: sg
+    name: sg-mq
   cloud:
     nacos:
       config:

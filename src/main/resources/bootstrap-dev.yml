@@ -1,9 +1,9 @@
 #日志
 logging:
-  config: classpath:log4j2-prd.xml
+  config: classpath:log4j2-dev.xml
 spring:
   application:
-    name: sg
+    name: sg-mq
   cloud:
     nacos:
       config:
