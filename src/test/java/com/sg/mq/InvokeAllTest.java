@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 
 public class InvokeAllTest {
 
-    private static ExecutorService executor = new ThreadPoolExecutor(5, 10,
+    private static ExecutorService executor = new ThreadPoolExecutor(10, 15,
             1000, TimeUnit.SECONDS, new ArrayBlockingQueue<>(5),
             new MyThreadFactory());
 
@@ -68,10 +68,10 @@ public class InvokeAllTest {
                 Integer i = 10/Integer.valueOf(Thread.currentThread().getName());
             } catch (Exception e) {
                 e.printStackTrace();
-                System.out.println("异常：= "+e);
-                throw new Exception("异常：= "+e);
+                System.out.println("异常线程：= "+Thread.currentThread().getName()+e);
+                //throw new Exception("异常：= "+e);
             }
-            return Thread.currentThread().getPriority();
+            return Integer.valueOf(Thread.currentThread().getName());
         }
     }
 

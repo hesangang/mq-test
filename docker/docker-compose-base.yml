@@ -1,0 +1,112 @@
+version: '3'
+services:
+  redis:
+    image: redis:latest
+    container_name: sg-redis-${ACTIVE}
+    restart: always
+    env_file: .env
+    networks:
+      - sg-net
+    ports:
+      - 6381:6379
+    volumes:
+      - ./data/redis:/data
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: sg-rabbitmq-${ACTIVE}
+    restart: always
+    env_file: .env
+    networks:
+      - sg-net
+    ports:
+      - 5674:5672
+      - 15674:15672
+    volumes:
+      - ./data/rabbitmq:/var/lib/rabbitmq/mnesia
+  mysql:
+    image: mysql:5.7
+    container_name: sg-mysql-${ACTIVE}
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DATASOURCE_PASSWORD}
+      - TZ=Asia/Shanghai
+    networks:
+      - sg-net
+    ports:
+      - 3308:3306
+    command: ["mysqld","--server_id=1","--log_bin","--innodb_ft_min_token_size=1","--ft_min_word_len=1","--ngram_token_size=1"]
+    volumes:
+      - ./data/mysql/mysql:/var/lib/mysql
+      - ./init.d/db/init-db.sh:/docker-entrypoint-initdb.d/1-init.sh
+  nacos:
+    image: nacos/nacos-server:latest
+    container_name: sg-nacos-${ACTIVE}
+    restart: always
+    environment:
+      - PREFER_HOST_MODE=hostname
+      - MODE=standalone
+      - SPRING_DATASOURCE_PLATFORM=mysql
+      - MYSQL_SERVICE_HOST=sg-mysql-${ACTIVE}
+      - MYSQL_SERVICE_DB_NAME=nacosdb
+      - MYSQL_SERVICE_PORT=3306
+      - MYSQL_SERVICE_USER=root
+      - MYSQL_SERVICE_PASSWORD=${DATASOURCE_PASSWORD}
+    volumes:
+      - ./data/nacos/standalone-logs/:/home/nacos/logs
+      - ./init.d/custom.properties:/home/nacos/init.d/custom.properties
+    networks:
+      - sg-net
+    ports:
+      - "8850:8848"
+    depends_on:
+      - mysql
+  prometheus:
+    container_name: sg-prometheus-${ACTIVE}
+    image: prom/prometheus:latest
+    volumes:
+      - ./init.d/prometheus/prometheus-standalone.yaml:/etc/prometheus/prometheus.yml
+    networks:
+      - sg-net
+    ports:
+      - "9090:9090"
+    depends_on:
+      - nacos
+    restart: on-failure
+  grafana:
+    container_name: sg-grafana-${ACTIVE}
+    image: grafana/grafana:latest
+    networks:
+      - sg-net
+    ports:
+      - 3000:3000
+    restart: on-failure
+  sentinel:
+    image: bladex/sentinel-dashboard:1.7.1
+    container_name: sg-sentinel-${ACTIVE}
+    networks:
+      - sg-net
+    ports:
+      - "8860:8858"
+    restart: always
+  admin:
+    image: admin-${ACTIVE}:latest
+    container_name: sg-admin-${ACTIVE}
+    restart: always
+    env_file: .env
+    environment:
+      TZ: Asia/Shanghai
+    networks:
+      - sg-net
+    ports:
+      - 8202:8080
+    volumes:
+      - ./data/logs:/logs/
+    depends_on:
+      - nacos
+
+networks:
+  sg-net:
+    external:
+      name: video-net

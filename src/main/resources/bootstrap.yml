@@ -1,6 +1,0 @@
-spring:
-  application:
-    name: sg-mq
-  profiles:
-    active: dev
-

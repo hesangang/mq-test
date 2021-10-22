@@ -1,0 +1,49 @@
+#日志
+logging:
+  config: classpath:log4j2-dev.xml
+spring:
+  application:
+    name: sg-mq
+  cloud:
+    nacos:
+      config:
+        server-addr: localhost:8848
+        group: sg
+        file-extension: yaml
+        ext-config[0]:
+          data‐id:  ${spring.application.name}-global-version-config-${spring.profiles.active}.yaml
+          group: sg
+          refresh: true
+      discovery:
+        server-addr: localhost:8848
+    sentinel:
+      transport:
+        dashboard: localhost
+        port: 8080
+      datasource:
+        flow:
+          nacos:
+            server-addr: localhost:8848
+            dataId: ${spring.application.name}-sentinel-flow-rules-${spring.profiles.active}.json
+            groupId: sg
+            # 规则类型，取值见：
+            # com.alibaba.cloud.sentinel.datasource.RuleType.FLOW
+            rule-type: flow
+            data-type: json
+        degrade:
+          nacos:
+            server-addr: localhost:8848
+            dataId: ${spring.application.name}-sentinel-degrade-rules-${spring.profiles.active}.json
+            groupId: sg
+            # com.alibaba.cloud.sentinel.datasource.RuleType.DEGRADE
+            rule-type: degrade
+            data-type: json
+pulsar:
+  # pulsar服务端地址
+  url: pulsar://10.133.253.161:6650
+  # 多个topic以逗号分隔
+  topic: pulsar-topic
+  # 消费者组
+  subscription: pulsar-topicGroup
+  # 非持久topic
+  # topic: non-persistent://public/default/pulsar-topic
