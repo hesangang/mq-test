@@ -1,29 +1,19 @@
 filebeat.inputs:
-    - type: log
-      enabled: true
-      fields:
-        service: k8s-gomezsz-springboot
-        pod_name: '${podName}'
-        pod_ip: '${podIp}'
-        pod_deploy_name: '${podDeployName}'
-        pod_namespace: '${podNamespace}'
-        pod_idc: $IDC
-      fields_under_root: true
-      ignore_older: "24h"
-      close_*: "23h"
-      scan_frequency: "10s"
-      tail_files: true
-      harvester_buffer_size: 16384
-      backoff: "1s"
-      exclude_lines: ['^$']
-      paths:
-      -
-        "/app/logs/*.log"
-      multiline:
-        pattern: '^20'
-        negate: true
-        match: after
-    output.kafka:
-      enabled: true
-      hosts: ["10.133.253.161:9092"]
-      topic: "k8s-gomezsz-springboot"
+  - type: log
+    enabled: true
+    fields:
+      service: k8s-sg-springboot
+    fields_under_root: true
+    ignore_older: "24h"
+    close_*: "23h"
+    scan_frequency: "10s"
+    tail_files: true
+    harvester_buffer_size: 16384
+    backoff: "1s"
+    exclude_lines: [ '^$' ]
+    paths:
+      - /logs/*.log
+output.kafka:
+  enabled: true
+  hosts: ["10.133.253.161:9092"]
+  topic: "k8s-sg-springboot"

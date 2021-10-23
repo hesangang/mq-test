@@ -1,12 +1,34 @@
 version: '3'
 services:
-  mqapi:
+  filebeat:
+    hostname: filebeat
+    image: sangang/filebeat
     build:
       context: .
+      dockerfile: Dockerfile-filebeat
       args:
         FILEBEAT_VERSION: 7.15.1
-        SERVICE_NAME: mq-0.0.1-SNAPSHOT
-    container_name: sg-mq
+    container_name: sg-filebeat
+    restart: always
+    environment:
+      TZ: Asia/Shanghai
+    networks:
+      - sg-net
+    volumes:
+      - type: bind
+        source: ./filebeat.yml
+        target: /usr/share/filebeat/filebeat.yml:ro
+        read_only: true
+      - type: volume
+        source: logs
+        target: /logs
+  api:
+    hostname: api
+    image: sangang/api
+    build:
+      context: .
+      dockerfile: Dockerfile-java
+    container_name: api
     restart: always
     environment:
       TZ: Asia/Shanghai
@@ -15,13 +37,9 @@ services:
     ports:
       - 8085:8080
     volumes:
-      - type: bind
-        source: ./filebeat.yml
-        target: /filebeat.yml
-        read_only: true
       - type: volume
         source: logs
-        target: /app/logs
+        target: /logs
 
 volumes:
   logs:

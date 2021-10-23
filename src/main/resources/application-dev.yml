@@ -38,6 +38,15 @@ spring:
             # com.alibaba.cloud.sentinel.datasource.RuleType.DEGRADE
             rule-type: degrade
             data-type: json
+  kafka:
+    bootstrap-servers: 10.133.253.161:9092
+    consumer:
+      group-id: k8s-sg-springboot
+      auto-offset-reset: earliest
+      enable-auto-commit: true
+      auto-commit-interval: 100
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 pulsar:
   # pulsar服务端地址
   url: pulsar://10.133.253.161:6650
