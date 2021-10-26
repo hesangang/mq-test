@@ -1,112 +1,148 @@
-version: '3'
+version: '3.2'
+
 services:
-  redis:
-    image: redis:latest
-    container_name: sg-redis-${ACTIVE}
+  elasticsearch:
+    build:
+      context: elasticsearch/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    container_name: elasticsearch
     restart: always
-    env_file: .env
-    networks:
-      - sg-net
-    ports:
-      - 6381:6379
     volumes:
-      - ./data/redis:/data
-  rabbitmq:
-    image: rabbitmq:management-alpine
-    container_name: sg-rabbitmq-${ACTIVE}
-    restart: always
-    env_file: .env
-    networks:
-      - sg-net
+      - type: bind
+        source: ./elasticsearch/config/elasticsearch.yml
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
+        read_only: true
+      - type: volume
+        source: elasticsearch
+        target: /usr/share/elasticsearch/data
     ports:
-      - 5674:5672
-      - 15674:15672
-    volumes:
-      - ./data/rabbitmq:/var/lib/rabbitmq/mnesia
-  mysql:
-    image: mysql:5.7
-    container_name: sg-mysql-${ACTIVE}
-    restart: always
-    env_file:
-      - .env
+      - "9200:9200"
+      - "9300:9300"
     environment:
-      - MYSQL_ROOT_PASSWORD=${DATASOURCE_PASSWORD}
-      - TZ=Asia/Shanghai
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      ELASTIC_PASSWORD: sangang
+      # Use single node discovery in order to disable production mode and avoid bootstrap checks.
+      # see: https://www.elastic.co/guide/en/elasticsearch/reference/current/bootstrap-checks.html
+      discovery.type: single-node
     networks:
-      - sg-net
-    ports:
-      - 3308:3306
-    command: ["mysqld","--server_id=1","--log_bin","--innodb_ft_min_token_size=1","--ft_min_word_len=1","--ngram_token_size=1"]
+      - elk
+
+  logstash:
+    build:
+      context: logstash/
+      args:
+        ELK_VERSION: $ELK_VERSION
     volumes:
-      - ./data/mysql/mysql:/var/lib/mysql
-      - ./init.d/db/init-db.sh:/docker-entrypoint-initdb.d/1-init.sh
-  nacos:
-    image: nacos/nacos-server:latest
-    container_name: sg-nacos-${ACTIVE}
+      - type: bind
+        source: ./logstash/config/logstash.yml
+        target: /usr/share/logstash/config/logstash.yml
+        read_only: true
+      - type: bind
+        source: ./logstash/pipeline
+        target: /usr/share/logstash/pipeline
+        read_only: true
+    container_name: logstash
     restart: always
+    ports:
+      - "5044:5044"
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
     environment:
-      - PREFER_HOST_MODE=hostname
-      - MODE=standalone
-      - SPRING_DATASOURCE_PLATFORM=mysql
-      - MYSQL_SERVICE_HOST=sg-mysql-${ACTIVE}
-      - MYSQL_SERVICE_DB_NAME=nacosdb
-      - MYSQL_SERVICE_PORT=3306
-      - MYSQL_SERVICE_USER=root
-      - MYSQL_SERVICE_PASSWORD=${DATASOURCE_PASSWORD}
-    volumes:
-      - ./data/nacos/standalone-logs/:/home/nacos/logs
-      - ./init.d/custom.properties:/home/nacos/init.d/custom.properties
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
     networks:
-      - sg-net
-    ports:
-      - "8850:8848"
+      - elk
     depends_on:
-      - mysql
-  prometheus:
-    container_name: sg-prometheus-${ACTIVE}
-    image: prom/prometheus:latest
+      - elasticsearch
+      - kafka1
+
+  kibana:
+    build:
+      context: kibana/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    container_name: kibana
+    restart: always
     volumes:
-      - ./init.d/prometheus/prometheus-standalone.yaml:/etc/prometheus/prometheus.yml
-    networks:
-      - sg-net
+      - type: bind
+        source: ./kibana/config/kibana.yml
+        target: /usr/share/kibana/config/kibana.yml
+        read_only: true
     ports:
-      - "9090:9090"
+      - "5601:5601"
+    networks:
+      - elk
     depends_on:
-      - nacos
-    restart: on-failure
-  grafana:
-    container_name: sg-grafana-${ACTIVE}
-    image: grafana/grafana:latest
-    networks:
-      - sg-net
-    ports:
-      - 3000:3000
-    restart: on-failure
-  sentinel:
-    image: bladex/sentinel-dashboard:1.7.1
-    container_name: sg-sentinel-${ACTIVE}
-    networks:
-      - sg-net
-    ports:
-      - "8860:8858"
+      - elasticsearch
+  zoo1:
+    image: confluentinc/cp-zookeeper:6.2.1
+    hostname: zoo1
+    container_name: zoo1
     restart: always
-  admin:
-    image: admin-${ACTIVE}:latest
-    container_name: sg-admin-${ACTIVE}
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_SERVERS: zoo1:2888:3888
+    networks:
+      - elk
+  kafka1:
+    image: confluentinc/cp-kafka:6.2.1
+    hostname: kafka1
+    container_name: kafka
     restart: always
-    env_file: .env
+    user: "appuser:appuser"
+    ports:
+      - "9092:9092"
+      - "9999:9999"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka1:19092,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zoo1:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
+    networks:
+      - elk
+    depends_on:
+      - zoo1
+  filebeat:
+    hostname: filebeat
+    image: sangang/filebeat
+    build:
+      context: filebeat/
+      dockerfile: Dockerfile
+      args:
+        FILEBEAT_VERSION: 7.15.1
+    container_name: filebeat
+    restart: always
     environment:
       TZ: Asia/Shanghai
-    networks:
-      - sg-net
-    ports:
-      - 8202:8080
     volumes:
-      - ./data/logs:/logs/
+      - type: bind
+        source: ./filebeat/config/filebeat.yml
+        target: /usr/share/filebeat/filebeat.yml:ro
+        read_only: true
+      - type: volume
+        source: logs
+        target: /logs
+    networks:
+      - elk
     depends_on:
-      - nacos
+      - kafka1
 
 networks:
-  sg-net:
+  elk:
     external:
-      name: video-net
+      name: sg-net
+
+volumes:
+  elasticsearch:
+  logs:

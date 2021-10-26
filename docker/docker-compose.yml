@@ -1,27 +1,5 @@
 version: '3'
 services:
-  filebeat:
-    hostname: filebeat
-    image: sangang/filebeat
-    build:
-      context: .
-      dockerfile: Dockerfile-filebeat
-      args:
-        FILEBEAT_VERSION: 7.15.1
-    container_name: sg-filebeat
-    restart: always
-    environment:
-      TZ: Asia/Shanghai
-    networks:
-      - sg-net
-    volumes:
-      - type: bind
-        source: ./filebeat.yml
-        target: /usr/share/filebeat/filebeat.yml:ro
-        read_only: true
-      - type: volume
-        source: logs
-        target: /logs
   api:
     hostname: api
     image: sangang/api
