@@ -88,7 +88,7 @@ spec:
         - name: java-logs 
           mountPath: /app/logs
       - name: filebeat
-        image: "gomezsz-hub.tencentcloudcr.com/ops/filebeat:7.10.2"
+        image: "sg-hub.tencentcloudcr.com/ops/filebeat:7.10.2"
         args: [
           "-c", "/etc/filebeat.yml",
           "-e",
