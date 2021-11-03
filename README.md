@@ -1,6 +1,6 @@
 # 说明文档
 
-### 安装环境
+## 安装环境
 
 * jdk1.8
 * maven
@@ -9,6 +9,8 @@
 * git
 * maven3.5
 
+## 集成jacoco代码覆盖率
+> 运行 mvn test 覆盖率报告target/site/jacoco
 
-
+## 
 
