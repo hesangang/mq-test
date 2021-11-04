@@ -1,0 +1,61 @@
+version: '3'
+services: 
+  postgres: 
+    image: postgres
+    restart: always
+    container_name: sonarqube_postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - sonarqube-postgresql:/var/lib/postgresql
+      - sonarqube-datasql:/var/lib/postgresql/data
+    environment:
+      TZ: Asia/Shanghai    
+      POSTGRES_USER: sonar   
+      POSTGRES_PASSWORD: sonar
+      POSTGRES_DB: sonar
+    networks: 
+      - sonar-network
+  sonar:
+    image: sonarqube:9.1.0-community
+    restart: always 
+    container_name: sonarqube
+    depends_on:
+      - postgres
+    volumes:
+      - sonarqube-extensions:/opt/sonarqube/extensions
+      - sonarqube-logs:/opt/sonarqube/logs
+      - sonarqube-data:/opt/sonarqube/data
+    ports:
+      - 9000:9000
+    environment:
+      SONARQUBE_JDBC_USERNAME: sonar
+      SONARQUBE_JDBC_PASSWORD: sonar
+      SONARQUBE_JDBC_URL: jdbc:postgresql://postgres:5432/sonar
+    networks: 
+      - sonar-network
+  jenkins:
+    image: jenkinsci/blueocean
+    container_name: jenkins
+    restart: always
+    ports:
+      - '8099:8080'
+      - '50000:50000'
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    networks: 
+      - sonar-network
+      
+volumes:
+  sonarqube-postgresql:
+  sonarqube-datasql:
+  sonarqube-extensions:
+  sonarqube-logs:
+  sonarqube-data:
+  sonarqube-conf:
+  jenkins_home:
+  
+networks:
+  sonar-network:
+    external:
+      name: sg-net

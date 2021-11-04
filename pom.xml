@@ -17,6 +17,8 @@
         <java.version>1.8</java.version>
         <sonar.version>3.6.0.1398</sonar.version>
         <sonar.exclusions>**/com/sg/mq/controller/*,**/com/sg/mq/producer/*</sonar.exclusions>
+        <sonar.login>admin</sonar.login>
+        <sonar.password>admin</sonar.password>
         <jacoco.version>0.8.7</jacoco.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -98,6 +100,11 @@
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>${jacoco.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.sonar</groupId>
+            <artifactId>sonar-maven-plugin</artifactId>
+            <version>5.1</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
