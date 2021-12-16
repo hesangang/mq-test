@@ -1,26 +1,98 @@
-version: '3'
+version: '3.3'
 services:
-  api:
-    hostname: api
-    image: sangang/api
-    build:
-      context: .
-      dockerfile: Dockerfile-java
-    container_name: api
+  redis:
+    image: redis:latest
+    container_name: sg-redis
     restart: always
-    environment:
-      TZ: Asia/Shanghai
     networks:
       - sg-net
     ports:
-      - 8085:8080
+      - 6379:6379
     volumes:
-      - type: volume
-        source: logs
-        target: /logs
+      - redis-data:/data
+  mysql:
+    image: mysql:5.7
+    container_name: sg-mysql
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DATASOURCE_PASSWORD}
+      - TZ=Asia/Shanghai
+    networks:
+      - sg-net
+    ports:
+      - 3306:3306
+    command: ["mysqld","--server_id=1","--log_bin","--innodb_ft_min_token_size=1","--ft_min_word_len=1","--ngram_token_size=1","--secure_file_priv="]
+    volumes:
+      - db-data:/var/lib/mysql
+  nacos:
+    image: nacos/nacos-server:latest
+    container_name: sg-nacos
+    restart: always
+    environment:
+      - PREFER_HOST_MODE=hostname
+      - MODE=standalone
+      - SPRING_DATASOURCE_PLATFORM=mysql
+      - MYSQL_SERVICE_HOST=sg-mysql
+      - MYSQL_SERVICE_DB_NAME=nacosdb
+      - MYSQL_SERVICE_PORT=3306
+      - MYSQL_SERVICE_USER=root
+      - MYSQL_SERVICE_PASSWORD=${DATASOURCE_PASSWORD}
+    networks:
+      - sg-net
+    ports:
+      - "8848:8848"
+    depends_on:
+      - mysql 
+  rabbitmq:
+    image: rabbitmq:3.8.3-management
+    container_name: rabbitmq
+    restart: always
+    hostname: myRabbitmq
+    ports:
+      - 15672:15672
+      - 5672:5672
+    volumes:
+      - rabbit-data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=root
+      - RABBITMQ_DEFAULT_PASS=root
+  pulsar:
+    image: "apachepulsar/pulsar:2.6.0"
+    container_name: sg-pulsar
+    command: bin/pulsar standalone
+    restart: on-failure
+    networks:
+      - sg-net
+    ports:
+      - "6650:6650"
+      - "8880:8080"
+    volumes:
+      - pulsar-data:/pulsar/data
+      - pulsar-conf:/pulsar/conf
+  pulsar-manager:
+    image: "apachepulsar/pulsar-manager:v0.2.0"
+    container_name: sg-pulsar-manager
+    restart: on-failure
+    networks:
+      - sg-net
+    ports:
+      - "9527:9527"
+      - "7750:7750"
+    depends_on:
+      - pulsar
+    links:
+      - pulsar
+    environment:
+      - SPRING_CONFIGURATION_FILE=/pulsar-manager/pulsar-manager/application.properties
 
 volumes:
-  logs:
+  redis-data:
+  db-data:
+  rabbit-data:
+  pulsar-data:
+  pulsar-conf:
 
 networks:
   sg-net:

@@ -1,0 +1,28 @@
+version: '3'
+services:
+  api:
+    hostname: api
+    image: sangang/api
+    build:
+      context: .
+      dockerfile: Dockerfile-java
+    container_name: api
+    restart: always
+    environment:
+      TZ: Asia/Shanghai
+    networks:
+      - sg-net
+    ports:
+      - 8085:8080
+    volumes:
+      - type: volume
+        source: logs
+        target: /logs
+
+volumes:
+  logs:
+
+networks:
+  sg-net:
+    external:
+      name: sg-net

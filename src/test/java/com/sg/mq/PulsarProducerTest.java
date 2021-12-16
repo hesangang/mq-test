@@ -1,3 +1,4 @@
+/*
 package com.sg.mq;
 
 import java.util.concurrent.TimeUnit;
@@ -28,4 +29,4 @@ class PulsarProducerTest {
             TimeUnit.MILLISECONDS.sleep(100);
         }
     }
-}
+}*/

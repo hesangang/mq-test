@@ -1,3 +1,4 @@
+/*
 package com.sg.mq.consumer;
 
 import java.util.concurrent.CompletableFuture;
@@ -61,3 +62,4 @@ public class PulsarConsumer {
         });
     }
 }
+*/

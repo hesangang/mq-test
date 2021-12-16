@@ -1,3 +1,4 @@
+/*
 package com.sg.mq.producer;
 
 import java.util.concurrent.CompletableFuture;
@@ -52,14 +53,16 @@ public class PulsarProducer {
                 .batcherBuilder(BatcherBuilder.DEFAULT)
                 .create();
     }
-    /**
+    */
+/**
      * 发送消息
      * @param key key
      * @param data data
      * @return MessageId
      * @author zmzhou
      * @since 2021/5/6 16:46
-     */
+     *//*
+
     public MessageId sendMsg(String key, String data) {
         CompletableFuture<MessageId> future = producer.newMessage()
                 .key(key)
@@ -75,4 +78,4 @@ public class PulsarProducer {
         });
         return future.join();
     }
-}
+}*/
