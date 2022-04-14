@@ -1,0 +1,222 @@
+apiVersion: apps/v1 #指定api版本，此值必须在kubectl api-versions中
+kind: Deployment #指定创建资源的角色/类型
+metadata: #资源的元数据属性
+  labels:
+    k8s-app: $JOB_NAME
+    qcloud-app: $JOB_NAME
+  name: $JOB_NAME #资源的名称，在同一个namespace中必须唯一
+  namespace: $NAMESPACE #部署在哪个namespace中
+spec: #资源规范字段
+  progressDeadlineSeconds: 600
+  replicas: 5 #声明副本数目
+  revisionHistoryLimit: 5 #保留历史版本
+  selector: #选择器
+    matchLabels: #匹配标签
+      k8s-app: $JOB_NAME
+      qcloud-app: $JOB_NAME
+  strategy: #策略
+    rollingUpdate: #滚动更新
+      maxSurge: 25% #最大额外可以存在的副本数，可以为百分比，也可以为整数
+      maxUnavailable: 25% #在更新过程中能够进入不可用状态的Pod的最大值，可以为百分比，也可以为整数
+    type: RollingUpdate #滚动更新策略
+  template: #模板
+    metadata: #资源的元数据/属性
+      annotations: #自定义注解列表
+        prometheus.io/component: springboot #自定义注解名字
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: "8080"
+        prometheus.io/scrape: "true"
+      labels: #设定资源的标签
+        k8s-app: $JOB_NAME
+        qcloud-app: $JOB_NAME
+    spec: #资源规范字段
+      affinity: #亲和性调试
+        nodeAffinity: #节点亲和力
+          requiredDuringSchedulingIgnoredDuringExecution: #pod必须部署在满足条件的节点上
+            nodeSelectorTerms: #节点满足任何一个条件就可以
+            - matchExpressions: #有多个选项，则只有同时满足这些逻辑选项的节点才能运行pod
+              - key: area
+                operator: In
+                values:
+                - $AREA
+      containers: #容器
+      - name: $JOB_NAME #容器的名字
+        env: #环境变量
+        - name: PATH
+          value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/app/jre1.8.0_202//bin
+        - name: JAVA_HOME
+          value: /app/jre1.8.0_202/      
+        image: $IMAGE_NAME #容器的镜像
+        imagePullPolicy: Always #每次Pod启动拉取镜像策略
+        livenessProbe: #内部监控检查的设置
+          failureThreshold: 5 #失败门槛，连接失败5次，pod杀掉，重启一个新pod
+          httpGet: #通过http检查监控，返回200-399之间，则认为容器正常
+            path: /healthz
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60 #表明第一次检测在容器启动后多长时间后开始
+          periodSeconds: 12 #检测时间间隔
+          successThreshold: 1 #成功门槛
+          timeoutSeconds: 5 #检测的超时时间
+        readinessProbe: #Pod准备服务健康检查设置
+          failureThreshold: 5
+          httpGet:
+            path: /healthz
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 12
+          successThreshold: 1
+          timeoutSeconds: 5
+        resources: #资源管理
+          limits: #最大使用
+            cpu: "4" #CPU，1核心=1000m
+            memory: 8Gi #内存，1G=1000Mi
+          requests: #容器运行时，最低资源需求，也就是说最少需要多少资源才能正常运行
+            cpu: "1"
+            memory: 2Gi
+        lifecycle: #钩子函数,感知自身生命周期中的事件,postStart在容器启动后立即执行一个指定的操作
+          preStop: #preStop发生的时机是容器被结束之前
+            exec:
+              command:
+              - sleep
+              - "30"
+        securityContext: #定义Pod或Container的特权与访问控制设置
+          privileged: false
+        workingDir: /app #容器工作目录
+        volumeMounts: #容器挂载目录
+        - name: java-logs 
+          mountPath: /app/logs
+      - name: filebeat
+        image: "sg-hub.tencentcloudcr.com/ops/filebeat:7.10.2"
+        args: [
+          "-c", "/etc/filebeat.yml",
+          "-e",
+        ]
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 1000m
+            memory: 500Mi
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - name: filebeat-config
+          mountPath: /etc/filebeat.yml
+          subPath: filebeat.yml
+        - name: java-logs 
+          mountPath: /app/logs
+        env:
+        - name: podIp
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: podName
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: podNamespace
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: podDeployName
+          value: $JOB_NAME
+        - name: TZ
+          value: "Asia/Shanghai"
+      dnsPolicy: ClusterFirst
+      volumes:
+      - name: java-logs
+        emptyDir: {}
+      - name: filebeat-config
+        configMap:
+          name: filebeat-java-config
+      imagePullSecrets:
+      - name: tcr.ipstcr-3tra6rp7-public
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 60
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-java-config 
+  namespace: $NAMESPACE
+data:
+  filebeat.yml: |-
+    filebeat.inputs: 
+    - type: log
+      enabled: true
+      fields:
+        service: k8s-sangang-springboot
+        pod_name: '${podName}'
+        pod_ip: '${podIp}'
+        pod_deploy_name: '${podDeployName}' 
+        pod_namespace: '${podNamespace}'
+        pod_idc: $IDC
+      fields_under_root: true
+      ignore_older: "24h"
+      close_*: "23h"
+      scan_frequency: "10s"
+      tail_files: true
+      harvester_buffer_size: 16384
+      backoff: "1s"
+      exclude_lines: ['^$']
+      paths:
+      -
+        "/app/logs/*.log"
+      multiline:
+        pattern: '^20'
+        negate: true
+        match: after
+    output.kafka:
+      enabled: true
+      hosts: ["kafka:9092"]
+      topic: "k8s-sangang-springboot"
+---
+# pod最低预留个数
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    k8s-app: $JOB_NAME
+    qcloud-app: $JOB_NAME
+  name: $JOB_NAME
+  namespace: $NAMESPACE
+spec:
+  selector:
+    matchLabels:
+      k8s-app: $JOB_NAME
+      qcloud-app: $JOB_NAME
+  minAvailable: 2
+---
+# 自动伸缩
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    k8s-app: $JOB_NAME
+    qcloud-app: $JOB_NAME
+  name: $JOB_NAME
+  namespace: $NAMESPACE
+spec:
+  minReplicas: 5
+  maxReplicas: 20
+  metrics:
+  - pods:
+      metricName: k8s_pod_rate_cpu_core_used_limit
+      targetAverageValue: "65"
+    type: Pods
+  - pods:
+      metricName: k8s_pod_rate_mem_no_cache_limit
+      targetAverageValue: "65"
+    type: Pods
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: $JOB_NAME
