@@ -1,15 +1,12 @@
-package com.anxl.bms;
+package com.sg.mq;
 
-import com.anxl.bms.interfaces.supplier.constant.RedissonConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.redisson.RedissonClient;
-import org.redisson.RedissonExt;
-import org.redisson.core.RLock;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -22,23 +19,25 @@ import java.util.concurrent.TimeUnit;
 @SpringBootTest
 public class RedissionTest {
 
-    @Resource
-    private RedissonExt prodRedisson;
 
-    @Resource
-    RedissonClient prodRedisson2;
+    @Autowired
+    RedissonClient prodRedisson;
+
+    String BMS_LOCK_BILL_DETAIL = "bms_lock_bill_detail";
 
 
-    @RepeatedTest(10)
+    @RepeatedTest(1)
     void testBmsLock(){
 
-        RLock lock = prodRedisson.getLock(RedissonConstant.BMS_LOCK_BILL_DETAIL + "3" );
+        RLock lock = prodRedisson.getLock(BMS_LOCK_BILL_DETAIL + "3" );
         boolean tryLock;
         try {
             //tryLock = lock.tryLock();
-            tryLock = lock.tryLock(500,1000, TimeUnit.SECONDS);
+            //等待5秒，-1续时
+            tryLock = lock.tryLock(5,-1, TimeUnit.SECONDS);
             if (tryLock){
-                System.out.println("获取锁成功！");
+                Thread.sleep(3000);
+                System.out.println("暂停10秒，获取锁成功！");
             }else {
                 System.out.println("获取锁失败！");
             }
