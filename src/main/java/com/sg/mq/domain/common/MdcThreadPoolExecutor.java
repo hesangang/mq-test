@@ -1,4 +1,4 @@
-package com.sg.mq.common;
+package com.sg.mq.domain.common;
 
 import org.slf4j.MDC;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;

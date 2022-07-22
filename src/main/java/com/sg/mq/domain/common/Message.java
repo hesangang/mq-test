@@ -1,10 +1,10 @@
-package com.sg.mq.common;
-
-import java.io.Serializable;
-import java.util.Date;
+package com.sg.mq.domain.common;
 
 import lombok.Builder;
 import lombok.Data;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 消息内容

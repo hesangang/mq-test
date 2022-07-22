@@ -1,12 +1,11 @@
-package com.sg.mq.common;
+package com.sg.mq.domain.common;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
-
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 线程工具类

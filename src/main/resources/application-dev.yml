@@ -65,3 +65,10 @@ pulsar:
   subscription: pulsar-topicGroup
   # 非持久topic
   # topic: non-persistent://public/default/pulsar-topic
+
+# swagger-ui custom path
+springdoc:
+  swagger-ui:
+    path: /doc
+  api-docs:
+    path: /v3/api-docs

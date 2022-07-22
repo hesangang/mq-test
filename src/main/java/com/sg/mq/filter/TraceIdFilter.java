@@ -1,7 +1,7 @@
 package com.sg.mq.filter;
 
 import cn.hutool.core.util.StrUtil;
-import com.sg.mq.util.TraceIdUtil;
+import com.sg.mq.domain.util.TraceIdUtil;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.GenericFilterBean;
 

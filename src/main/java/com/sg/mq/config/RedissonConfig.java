@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
 
-@Configuration
+//@Configuration
 public class RedissonConfig {
 
     @Autowired

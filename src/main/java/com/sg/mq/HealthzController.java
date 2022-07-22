@@ -1,4 +1,4 @@
-package com.sg.mq.controller;
+package com.sg.mq;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;

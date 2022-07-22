@@ -1,4 +1,4 @@
-package com.sg.mq.common;
+package com.sg.mq.domain.common;
 
 /**
  * 常量

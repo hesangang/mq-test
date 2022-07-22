@@ -1,4 +1,4 @@
-package com.sg.mq.util;
+package com.sg.mq.domain.util;
 
 import cn.hutool.core.util.StrUtil;
 import org.slf4j.MDC;
