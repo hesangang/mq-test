@@ -1,4 +1,4 @@
-package com.sg.mq.consumer;
+package com.sg.mq.listener.consumer;
 
 import com.sg.mq.domain.common.Constants;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ import java.util.Optional;
 public class KafkaConsumer {
 
 	@KafkaListener(topics = {Constants.KAFKA_TOPIC})
-	public void listen(ConsumerRecord<?, ?> record) {
+	public void listener(ConsumerRecord<?, ?> record) {
 		Optional<?> kafkaMessage = Optional.ofNullable(record.value());
 		if (kafkaMessage.isPresent()) {
 			Object message = kafkaMessage.get();
