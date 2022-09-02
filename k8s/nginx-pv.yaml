@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: local-pv
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: local-storage
+  local: # local类型
+    path: /run/desktop/mnt/host/e/docker/mount/nginx  #这是windows WSL 2 挂载路径写法
+  nodeAffinity: # 这里就设置了节点亲和
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - docker-desktop # 这里我们使用node01节点，该节点有/data/vol1路径

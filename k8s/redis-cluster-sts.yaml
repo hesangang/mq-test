@@ -1,0 +1,88 @@
+---
+apiVersion: v1
+kind: Service                                     #先创建一个无头service
+metadata:
+  labels:                                         #service本身的标签
+    app: redis-svc
+  name: redis-svc                                 #service的名称,下面创建的StatefulSet就要引用这个service名称
+spec:
+  ports:
+    - port: 6360                                    #service本身的端口
+      protocol: TCP
+      targetPort: 6360                              #目标端口6360,redis默认端口是6379,这里为了安全改成了6360
+  selector:
+    app: redis                                    #标签选择器要与下面创建的pod的标签一样
+  type: ClusterIP
+  clusterIP: None                                 #clusterIP为None表示创建的service为无头service
+---
+apiVersion: apps/v1
+kind: StatefulSet                                 #创建StatefulSet资源
+metadata:
+  labels:                                         #StatefulSet本身的标签
+    app: redis-sts
+  name: redis-sts                                 #资源名称
+  namespace: default                              #资源所属命名空间
+spec:
+  selector:                                       #标签选择器,要与下面pod模板定义的pod标签保持一致
+    matchLabels:
+      app: redis-sts
+  replicas: 6                                     #副本数为6个,redis集群模式最少要为6个节点,构成3主3从
+  serviceName: redis-svc                          #指定使用service为上面我们创建的无头service的名称
+  template:
+    metadata:
+      labels:                                     #pod的标签,上面的无头service的标签选择器和sts标签选择器都要与这个相同
+        app: redis-sts
+    spec:
+      #     affinity:
+      #       podAntiAffinity:                         #定义pod反亲和性,目的让6个pod不在同一个主机上,实现均衡分布,这里我的node节点不够,所以不定义反亲和性
+      #         preferredDuringSchedulingIgnoredDuringExecution:
+      #         - weight: 100
+      #           podAffinityTerm:
+      #             labelSelector:
+      #              matchExpressions:
+      #               - key: app
+      #                 operator: In
+      #                 values:
+      #                 - redis-sts
+      #             topologyKey: kubernetes.io/hostname
+      containers:
+        - name: redis                               #容器名称
+          image: redis:6.0                       #redis镜像
+          imagePullPolicy: IfNotPresent             #镜像拉取策略
+          command:                                  #定义容器的启动命令和参数
+            - "redis-server"
+          args:
+            - "/etc/redis/redis.conf"
+            - "--cluster-announce-ip"				 #这个参数和下面的这个参数
+            - "$(POD_IP)"							 #这个参数是为了解决pod重启ip变了之后,redis集群状态无法自动同步问题
+          env:
+            - name: POD_IP							 #POD_IP值引用自status.podIP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          ports:                                    #定义容器端口
+            - name: redis-6360                        #为端口取个名称为http
+              containerPort: 6360                     #容器端口
+          volumeMounts:                             #挂载点
+            - name: "redis-conf"                      #引用下面定义的redis-conf卷
+              mountPath: "/etc/redis"                 #redis配置文件的挂载点
+            - name: "redis-data"                      #指定使用的卷名称,这里使用的是下面定义的pvc模板的名称
+              mountPath: "/data"                      #redis数据的挂载点
+      restartPolicy: Always
+      volumes:
+        - name: "redis-conf"                        #挂载一个名为redis-conf的configMap卷,这个cm卷已经定义好了
+          configMap:
+            name: "redis-conf"
+            items:
+              - key: "redis.conf"
+                path: "redis.conf"
+  volumeClaimTemplates:                           #定义创建pvc的模板
+    - metadata:
+        name: "redis-data"                        #模板名称
+      spec:
+        resources:                                #资源请求
+          requests:
+            storage: 100M                         #需要100M的存储空间
+        accessModes:
+          - ReadWriteOnce                           #访问模式为RWO
+        storageClassName: "nfs-storageclass"      #指定使用的存储类，实现动态分配pv

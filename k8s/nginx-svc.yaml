@@ -1,0 +1,42 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginxdata
+              mountPath: "/var/www/html/"
+      volumes:
+        - name: nginxdata
+          persistentVolumeClaim:
+            claimName: nginx-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+    - port: 80 #写nginx本身端口
+      name: ssx-nginx-last
+      protocol: TCP
+      targetPort: 80 # 容器nginx对外开放的端口 上面的dm已经指定了
+      nodePort: 31090 #外网访问的端口
+  type: NodePort
