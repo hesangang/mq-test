@@ -1,6 +1,0 @@
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: mysql-storage
-provisioner: kubernetes.io/no-provisioner   # 存储插件名称 进行动态创建 PV
-volumeBindingMode: WaitForFirstConsumer     # 很关键 延迟绑定  Pod 的调度要参考卷PV的分布

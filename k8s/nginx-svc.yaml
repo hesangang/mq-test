@@ -18,13 +18,30 @@ spec:
           image: nginx:latest
           ports:
             - containerPort: 80
+          env:
+            - name: podIp
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
           volumeMounts:
             - name: nginxdata
-              mountPath: "/var/www/html/"
+              mountPath: "/var/log/nginx/"
+              subPathExpr: $(POD_NAMESPACE)/$(POD_NAME)
       volumes:
         - name: nginxdata
           persistentVolumeClaim:
-            claimName: nginx-pvc
+            claimName: local-pvc
 ---
 apiVersion: v1
 kind: Service

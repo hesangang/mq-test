@@ -23,19 +23,40 @@ spec:
           env:
             - name: MYSQL_ROOT_PASSWORD
               value: "123456"
+            - name: podIp
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
           volumeMounts:
             - name: mysql-pvc
               mountPath: /var/lib/mysql
+              subPathExpr: $(POD_NAMESPACE)/$(POD_NAME)
+      restartPolicy: Always
+      volumes:
+        - name: mysql-pvc
+          persistentVolumeClaim:
+            claimName: local-pvc
 
-  volumeClaimTemplates:   #可看作pvc的模板
-    - metadata:
-        name: mysql-pvc
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        storageClassName: "mysql-storage"  #存储类名，改为集群中已存在的
-        resources:
-          requests:
-            storage: 1Gi
+#  volumeClaimTemplates:   #可看作pvc的模板
+#    - metadata:
+#        name: mysql-pvc
+#      spec:
+#        accessModes: [ "ReadWriteOnce" ]
+#        storageClassName: "local-storage"  #存储类名，改为集群中已存在的
+#        resources:
+#          requests:
+#            storage: 1Gi
 ---
 #定义mysql的Service
 apiVersion: v1

@@ -4,14 +4,14 @@ metadata:
   name: local-pv
 spec:
   capacity:
-    storage: 1Gi
+    storage: 50Gi
   volumeMode: Filesystem
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany  #允许被单个节点以读写的模式进行挂载,local
   persistentVolumeReclaimPolicy: Delete
   storageClassName: local-storage
   local: # local类型
-    path: /run/desktop/mnt/host/e/docker/mount/nginx  #这是windows WSL 2 挂载路径写法
+    path: /run/desktop/mnt/host/e/docker/mount  #这是windows WSL 2 挂载路径写法
   nodeAffinity: # 这里就设置了节点亲和
     required:
       nodeSelectorTerms:
