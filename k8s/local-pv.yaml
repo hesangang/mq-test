@@ -19,4 +19,4 @@ spec:
             - key: kubernetes.io/hostname
               operator: In
               values:
-                - docker-desktop # 这里我们使用node01节点，该节点有/data/vol1路径
+                - docker-desktop # 这里我们指定节点，该节点有path路径
