@@ -11,3 +11,5 @@ network.host: 0.0.0.0
 xpack.license.self_generated.type: trial
 xpack.security.enabled: true
 xpack.monitoring.collection.enabled: true
+# 解决重启报错，更新地图数据关掉
+ingest.geoip.downloader.enabled: false

@@ -42,6 +42,9 @@ services:
         source: ./logstash/pipeline
         target: /usr/share/logstash/pipeline
         read_only: true
+      - type: bind
+        source: ./logstash/mysql/mysql-connector-java-5.1.26.jar
+        target: /usr/share/logstash/mysql-connector-java.jar
     container_name: logstash
     restart: always
     ports:
@@ -62,7 +65,7 @@ services:
       context: kibana/
       args:
         ELK_VERSION: $ELK_VERSION
-    container_name: kibana
+    container_name: kibana2
     restart: always
     volumes:
       - type: bind
