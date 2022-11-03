@@ -1,0 +1,13 @@
+PUT t_product
+{
+  "mappings": {
+    "properties": {
+      "product_join_field": {
+        "type": "join",
+        "relations": {
+          "category": "product"
+        }
+      }
+    }
+  }
+}

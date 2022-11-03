@@ -160,6 +160,7 @@ services:
     volumes:
       - certs:/usr/share/logstash/config/certs:ro
       - ./logstash/pipeline:/usr/share/logstash/pipeline
+      - ./logstash/config:/usr/share/logstash/config
       - D:\\tools\\dbeaver\\mysql-connector-java-5.1.26.jar:/usr/share/logstash/mysql-connector-java.jar
     ports:
       - "5044:5044"

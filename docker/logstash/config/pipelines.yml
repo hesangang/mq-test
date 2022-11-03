@@ -1,0 +1,11 @@
+- pipeline.id: logstash.conf
+  pipeline.workers: 1
+  path.config: "/usr/share/logstash/pipeline/logstash.conf"
+#唯一id(标识用的)
+- pipeline.id: sys_user.conf
+  pipeline.workers: 1
+  path.config: "/usr/share/logstash/pipeline/sys_user.conf"
+
+- pipeline.id: product.conf
+  pipeline.workers: 1
+  path.config: "/usr/share/logstash/pipeline/product.conf"
