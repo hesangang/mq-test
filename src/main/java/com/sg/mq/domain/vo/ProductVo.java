@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -101,7 +102,7 @@ public class ProductVo implements Serializable {
     private Integer auditStatus;
 
     @Schema(description = "上架时间")
-    private Date saleTime;
+    private LocalDateTime saleTime;
 
     @Schema(description = "产品介绍")
     private String intro;
@@ -131,7 +132,7 @@ public class ProductVo implements Serializable {
     private String purchaserCode;
 
     @Schema(description = "下架时间")
-    private Date unSaleTime;
+    private LocalDateTime unSaleTime;
 
     @Schema(description = "视频地址")
     private String videoPath;
@@ -143,13 +144,13 @@ public class ProductVo implements Serializable {
     private String createUser;
 
     @Schema(description = "创建时间")
-    private Date createTime;
+    private LocalDateTime createTime;
 
     @Schema(description = "更新人")
     private String updateUser;
 
     @Schema(description = "更新时间")
-    private Date updateTime;
+    private LocalDateTime updateTime;
 
 
 }

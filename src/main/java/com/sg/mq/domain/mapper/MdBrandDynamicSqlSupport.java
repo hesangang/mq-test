@@ -50,6 +50,9 @@ public final class MdBrandDynamicSqlSupport {
     public static final SqlColumn<LocalDateTime> updateTime = mdBrand.updateTime;
 
     @Generated("org.mybatis.generator.api.MyBatisGenerator")
+    public static final SqlColumn<Integer> isDel = mdBrand.isDel;
+
+    @Generated("org.mybatis.generator.api.MyBatisGenerator")
     public static final class MdBrand extends AliasableSqlTable<MdBrand> {
         public final SqlColumn<String> id = column("id", JDBCType.VARCHAR);
 
@@ -76,6 +79,8 @@ public final class MdBrandDynamicSqlSupport {
         public final SqlColumn<String> updateUser = column("update_user", JDBCType.VARCHAR);
 
         public final SqlColumn<LocalDateTime> updateTime = column("update_time", JDBCType.TIMESTAMP);
+
+        public final SqlColumn<Integer> isDel = column("is_del", JDBCType.INTEGER);
 
         public MdBrand() {
             super("md_brand", MdBrand::new);

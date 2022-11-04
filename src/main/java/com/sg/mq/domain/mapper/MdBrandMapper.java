@@ -32,7 +32,7 @@ import org.mybatis.dynamic.sql.util.mybatis3.MyBatis3Utils;
 @Mapper
 public interface MdBrandMapper extends CommonCountMapper, CommonDeleteMapper, CommonInsertMapper<MdBrand>, CommonUpdateMapper {
     @Generated("org.mybatis.generator.api.MyBatisGenerator")
-    BasicColumn[] selectList = BasicColumn.columnList(id, brandName, brandImg, url, description, sort, enable, resellerLevel, recommend, createUser, createTime, updateUser, updateTime);
+    BasicColumn[] selectList = BasicColumn.columnList(id, brandName, brandImg, url, description, sort, enable, resellerLevel, recommend, createUser, createTime, updateUser, updateTime, isDel);
 
     @Generated("org.mybatis.generator.api.MyBatisGenerator")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
@@ -49,7 +49,8 @@ public interface MdBrandMapper extends CommonCountMapper, CommonDeleteMapper, Co
         @Result(column="create_user", property="createUser", jdbcType=JdbcType.VARCHAR),
         @Result(column="create_time", property="createTime", jdbcType=JdbcType.TIMESTAMP),
         @Result(column="update_user", property="updateUser", jdbcType=JdbcType.VARCHAR),
-        @Result(column="update_time", property="updateTime", jdbcType=JdbcType.TIMESTAMP)
+        @Result(column="update_time", property="updateTime", jdbcType=JdbcType.TIMESTAMP),
+        @Result(column="is_del", property="isDel", jdbcType=JdbcType.INTEGER)
     })
     List<MdBrand> selectMany(SelectStatementProvider selectStatement);
 
@@ -91,6 +92,7 @@ public interface MdBrandMapper extends CommonCountMapper, CommonDeleteMapper, Co
             .map(createTime).toProperty("createTime")
             .map(updateUser).toProperty("updateUser")
             .map(updateTime).toProperty("updateTime")
+            .map(isDel).toProperty("isDel")
         );
     }
 
@@ -110,6 +112,7 @@ public interface MdBrandMapper extends CommonCountMapper, CommonDeleteMapper, Co
             .map(createTime).toProperty("createTime")
             .map(updateUser).toProperty("updateUser")
             .map(updateTime).toProperty("updateTime")
+            .map(isDel).toProperty("isDel")
         );
     }
 
@@ -129,6 +132,7 @@ public interface MdBrandMapper extends CommonCountMapper, CommonDeleteMapper, Co
             .map(createTime).toPropertyWhenPresent("createTime", row::getCreateTime)
             .map(updateUser).toPropertyWhenPresent("updateUser", row::getUpdateUser)
             .map(updateTime).toPropertyWhenPresent("updateTime", row::getUpdateTime)
+            .map(isDel).toPropertyWhenPresent("isDel", row::getIsDel)
         );
     }
 
@@ -173,7 +177,8 @@ public interface MdBrandMapper extends CommonCountMapper, CommonDeleteMapper, Co
                 .set(createUser).equalTo(row::getCreateUser)
                 .set(createTime).equalTo(row::getCreateTime)
                 .set(updateUser).equalTo(row::getUpdateUser)
-                .set(updateTime).equalTo(row::getUpdateTime);
+                .set(updateTime).equalTo(row::getUpdateTime)
+                .set(isDel).equalTo(row::getIsDel);
     }
 
     @Generated("org.mybatis.generator.api.MyBatisGenerator")
@@ -190,7 +195,8 @@ public interface MdBrandMapper extends CommonCountMapper, CommonDeleteMapper, Co
                 .set(createUser).equalToWhenPresent(row::getCreateUser)
                 .set(createTime).equalToWhenPresent(row::getCreateTime)
                 .set(updateUser).equalToWhenPresent(row::getUpdateUser)
-                .set(updateTime).equalToWhenPresent(row::getUpdateTime);
+                .set(updateTime).equalToWhenPresent(row::getUpdateTime)
+                .set(isDel).equalToWhenPresent(row::getIsDel);
     }
 
     @Generated("org.mybatis.generator.api.MyBatisGenerator")
@@ -208,6 +214,7 @@ public interface MdBrandMapper extends CommonCountMapper, CommonDeleteMapper, Co
             .set(createTime).equalTo(row::getCreateTime)
             .set(updateUser).equalTo(row::getUpdateUser)
             .set(updateTime).equalTo(row::getUpdateTime)
+            .set(isDel).equalTo(row::getIsDel)
             .where(id, isEqualTo(row::getId))
         );
     }
@@ -227,6 +234,7 @@ public interface MdBrandMapper extends CommonCountMapper, CommonDeleteMapper, Co
             .set(createTime).equalToWhenPresent(row::getCreateTime)
             .set(updateUser).equalToWhenPresent(row::getUpdateUser)
             .set(updateTime).equalToWhenPresent(row::getUpdateTime)
+            .set(isDel).equalToWhenPresent(row::getIsDel)
             .where(id, isEqualTo(row::getId))
         );
     }

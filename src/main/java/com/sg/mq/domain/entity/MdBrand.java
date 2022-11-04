@@ -45,6 +45,9 @@ public class MdBrand implements Serializable {
     private LocalDateTime updateTime;
 
     @Generated("org.mybatis.generator.api.MyBatisGenerator")
+    private Integer isDel;
+
+    @Generated("org.mybatis.generator.api.MyBatisGenerator")
     private static final long serialVersionUID = 1L;
 
     @Generated("org.mybatis.generator.api.MyBatisGenerator")
@@ -177,6 +180,16 @@ public class MdBrand implements Serializable {
         this.updateTime = updateTime;
     }
 
+    @Generated("org.mybatis.generator.api.MyBatisGenerator")
+    public Integer getIsDel() {
+        return isDel;
+    }
+
+    @Generated("org.mybatis.generator.api.MyBatisGenerator")
+    public void setIsDel(Integer isDel) {
+        this.isDel = isDel;
+    }
+
     @Override
     @Generated("org.mybatis.generator.api.MyBatisGenerator")
     public String toString() {
@@ -197,6 +210,7 @@ public class MdBrand implements Serializable {
         sb.append(", createTime=").append(createTime);
         sb.append(", updateUser=").append(updateUser);
         sb.append(", updateTime=").append(updateTime);
+        sb.append(", isDel=").append(isDel);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

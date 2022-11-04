@@ -44,6 +44,9 @@ public final class MdCategoryDynamicSqlSupport {
     public static final SqlColumn<LocalDateTime> createTime = mdCategory.createTime;
 
     @Generated("org.mybatis.generator.api.MyBatisGenerator")
+    public static final SqlColumn<Integer> isDel = mdCategory.isDel;
+
+    @Generated("org.mybatis.generator.api.MyBatisGenerator")
     public static final class MdCategory extends AliasableSqlTable<MdCategory> {
         public final SqlColumn<String> id = column("id", JDBCType.VARCHAR);
 
@@ -66,6 +69,8 @@ public final class MdCategoryDynamicSqlSupport {
         public final SqlColumn<String> createUser = column("create_user", JDBCType.VARCHAR);
 
         public final SqlColumn<LocalDateTime> createTime = column("create_time", JDBCType.TIMESTAMP);
+
+        public final SqlColumn<Integer> isDel = column("is_del", JDBCType.INTEGER);
 
         public MdCategory() {
             super("md_category", MdCategory::new);

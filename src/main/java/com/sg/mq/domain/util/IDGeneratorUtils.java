@@ -39,7 +39,7 @@ public class IDGeneratorUtils {
                 int subNum = random.nextInt(9);
                 uuid+=subNum;
             }
-            return uuid;
+            return CAR_CODE_PREFIX+uuid;
         }
         return null;
     }

@@ -1,5 +1,6 @@
-package com.sg.mq.domain.param;
+package com.sg.mq.domain.query;
 
+import com.sg.mq.domain.model.PageQuery;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -7,6 +8,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * <p>
@@ -20,7 +22,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @Schema(name="品牌")
-public class BrandParam implements Serializable {
+public class BrandQuery extends PageQuery implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -61,7 +63,10 @@ public class BrandParam implements Serializable {
     private String updateUser;
 
     @Schema(description = "更新时间")
-    private LocalDateTime updateTime;
+    private LocalDateTime updateTimeMin;
+
+    @Schema(description = "更新时间")
+    private LocalDateTime updateTimeMax;
 
 
 }

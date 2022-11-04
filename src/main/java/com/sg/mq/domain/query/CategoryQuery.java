@@ -1,5 +1,6 @@
-package com.sg.mq.domain.param;
+package com.sg.mq.domain.query;
 
+import com.sg.mq.domain.model.PageQuery;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -7,6 +8,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * <p>
@@ -20,7 +22,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @Schema(name="品类")
-public class CategoryParam implements Serializable {
+public class CategoryQuery extends PageQuery implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -49,7 +51,10 @@ public class CategoryParam implements Serializable {
     private String updateUser;
 
     @Schema(description = "操作时间")
-    private LocalDateTime updateTime;
+    private LocalDateTime updateTimeMin;
+
+    @Schema(description = "操作时间")
+    private LocalDateTime updateTimeMax;
 
     @Schema(description = "创建人")
     private String createUser;

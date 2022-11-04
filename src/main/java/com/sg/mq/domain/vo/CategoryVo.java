@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -49,13 +49,13 @@ public class CategoryVo implements Serializable {
     private String updateUser;
 
     @Schema(description = "操作时间")
-    private Date updateTime;
+    private LocalDateTime updateTime;
 
     @Schema(description = "创建人")
     private String createUser;
 
     @Schema(description = "创建时间")
-    private Date createTime;
+    private LocalDateTime createTime;
 
 
 }
