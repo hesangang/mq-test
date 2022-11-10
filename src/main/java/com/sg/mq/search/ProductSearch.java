@@ -14,6 +14,7 @@ import co.elastic.clients.util.ObjectBuilder;
 import com.sg.mq.domain.entity.MdProduct;
 import com.sg.mq.domain.model.PageResult;
 import com.sg.mq.domain.query.ProductQuery;
+import com.sg.mq.domain.vo.CategoryVo;
 import com.sg.mq.domain.vo.ProductVo;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +32,8 @@ public class ProductSearch {
     @Autowired
     private ElasticsearchClient client;
 
-    String INDEX_NAME = "md_product";
+    //索引别名
+    String INDEX_NAME = "md_product_alias";
 
     @SneakyThrows
     public ProductVo getById(String id) {
@@ -47,21 +49,19 @@ public class ProductSearch {
 
     @SneakyThrows
     public PageResult<ProductVo> queryList(ProductQuery query) {
-        SearchResponse<JsonData> response = client.search(s -> {
+        SearchResponse<CategoryVo> response = client.search(s -> {
             SearchRequest.Builder searchBuilder = s.index(INDEX_NAME);
             buildSearch(query,searchBuilder);
             return searchBuilder;
-        }, JsonData.class);
+        }, CategoryVo.class);
 
         TotalHits total = response.hits().total();
-        List<Hit<JsonData>> hits = response.hits().hits();
-        List<ProductVo> list  = new ArrayList<>();
-        for(Hit<JsonData> hit : hits){
-            JsonData entity = hit.source();
-            ProductVo vo = new ProductVo();
-            BeanUtils.copyProperties(entity, vo);
+        List<Hit<CategoryVo>> hits = response.hits().hits();
+        List<CategoryVo> list  = new ArrayList<>();
+        for(Hit<CategoryVo> hit : hits){
+            CategoryVo entity = hit.source();
             List<Hit<JsonData>> hitList = hit.innerHits().get("productList").hits().hits();
-            list.add(vo);
+            list.add(entity);
 
         }
 

@@ -34,9 +34,9 @@ public class BrandTset {
     void addBrand(int argument) {
         BrandParam param = new BrandParam();
         param.setId(IDGeneratorUtils.getId());
-        param.setBrandName("可口可乐");
-        param.setBrandImg("www.kkkl.png");
-        param.setUrl("www.kkkl.com");
+        param.setBrandName("华为");
+        param.setBrandImg("www.huawei.png");
+        param.setUrl("www.huawei.com");
         param.setCreateUser("system");
         param.setCreateTime(LocalDateTime.now());
         param.setUpdateUser("system");

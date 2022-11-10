@@ -33,8 +33,8 @@ public class CategoryTset {
     void addCategory(int argument) {
         CategoryParam param = new CategoryParam();
         param.setId(IDGeneratorUtils.getId());
-        param.setCategoryName("冰箱");
-        param.setCategoryCode("B001");
+        param.setCategoryName("电脑");
+        param.setCategoryCode("B002");
         param.setCategoryType("1");
         param.setCreateUser("system");
         param.setCreateTime(LocalDateTime.now());

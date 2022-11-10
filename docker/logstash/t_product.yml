@@ -11,3 +11,16 @@ PUT t_product
     }
   }
 }
+
+# 为索引创建别名,多个索引可以创建一个别名
+POST /_aliases
+{
+  "actions": [
+    {
+      "add": {
+        "index": "md_product",
+        "alias": "md_product_alias"
+      }
+    }
+  ]
+}
