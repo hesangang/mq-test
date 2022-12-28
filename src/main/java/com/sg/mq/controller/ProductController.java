@@ -37,6 +37,28 @@ public class ProductController extends BaseController{
         return success(result);
     }
 
+    @GetMapping(value = "searchAfter")
+    public JResult<PageResult<ProductVo>> searchAfter(ProductQuery q) throws Exception {
+        if(q.getPitId() == null){
+            PageResult<ProductVo> result = productSearch.searchAfterBegin(q);
+            return success(result);
+        }
+        PageResult<ProductVo> result = productSearch.searchAfterProcess(q);
+        return success(result);
+
+    }
+
+    @GetMapping(value = "scroll")
+    public JResult<PageResult<ProductVo>> scroll(ProductQuery q) throws Exception {
+        if(q.getPitId() == null){
+            PageResult<ProductVo> result = productSearch.scrollBegin(q);
+            return success(result);
+        }
+        PageResult<ProductVo> result = productSearch.scrollProcess(q);
+        return success(result);
+
+    }
+
     @Operation(summary = "添加商品")
     @PostMapping(value = "add")
     public JResult<ProductParam> addProduct(@RequestBody @Validated ProductParam param) {

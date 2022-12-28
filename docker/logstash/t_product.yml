@@ -7,6 +7,12 @@ PUT t_product
         "relations": {
           "category": "product"
         }
+      },
+      "id": {
+        "type": "keyword"
+      },
+      "storeName": {
+        "type": "text"
       }
     }
   }
@@ -24,3 +30,252 @@ POST /_aliases
     }
   ]
 }
+
+
+
+# 默认索引
+PUT md_product
+  {
+    "mappings": {
+      "properties": {
+        "product_join_field": {
+          "type": "join",
+          "eager_global_ordinals": true,
+          "relations": {
+            "category": "product"
+          }
+        },
+        "id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "audit_status": {
+          "type": "long"
+        },
+        "bissness_type": {
+          "type": "long"
+        },
+        "brand_code": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "brand_name": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "cate_id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "cate_name": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "category_code": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "category_name": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "category_type": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "create_time": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
+        },
+        "create_user": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "favor_status": {
+          "type": "long"
+        },
+        "insale_status": {
+          "type": "long"
+        },
+        "is_del": {
+          "type": "long"
+        },
+        "mkt_price": {
+          "type": "long"
+        },
+        "name_initials": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "no_stock": {
+          "type": "long"
+        },
+        "parent_id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "price": {
+          "type": "long"
+        },
+        "price_unit": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "product_code": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "product_name": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "product_type": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "review_average": {
+          "type": "long"
+        },
+        "review_count": {
+          "type": "long"
+        },
+        "review_valid_count": {
+          "type": "long"
+        },
+        "sale_amount": {
+          "type": "long"
+        },
+        "sale_time": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
+        },
+        "sort": {
+          "type": "long"
+        },
+        "status": {
+          "type": "long"
+        },
+        "stock_amount": {
+          "type": "long"
+        },
+        "supplier_code": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "type": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "unix_ts_in_secs_md_category": {
+          "type": "long"
+        },
+        "unix_ts_in_secs_md_product": {
+          "type": "long"
+        },
+        "update_time": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
+        },
+        "update_user": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "usable_amount": {
+          "type": "long"
+        },
+        "weight": {
+          "type": "long"
+        }
+      }
+    }
+  }

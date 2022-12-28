@@ -34,21 +34,21 @@ public class ProductTset {
     void addProduct(int argument) {
         ProductParam param = new ProductParam();
         param.setId(IDGeneratorUtils.getId());
-        param.setProductName("Mac");
+        param.setProductName("HUAWEI Mate 40");
         param.setProductCode(IDGeneratorUtils.getStrId());
         param.setProductType("1");
-        param.setCateId("1038140070894239744");
-        param.setCateName("冰箱");
-        param.setBrandCode("1038162196007223296");
-        param.setBrandName("可口可乐");
+        param.setCateId("2001");
+        param.setCateName("手机");
+        param.setBrandCode("3002");
+        param.setBrandName("华为");
         param.setSupplierCode("G001");
         param.setNameInitials("M");
-        param.setMktPrice(BigDecimal.valueOf(1001));
+        param.setMktPrice(BigDecimal.valueOf(2001));
         param.setPrice(BigDecimal.valueOf(199));
         param.setPriceUnit("元");
         param.setWeight(BigDecimal.valueOf(11.5));
-        param.setStockAmount(8000);
-        param.setSaleAmount(5000);
+        param.setStockAmount(3000);
+        param.setSaleAmount(6000);
         param.setReviewCount(2001);
         param.setReviewValidCount(1200);
         param.setReviewAverage(BigDecimal.valueOf(4.9));
@@ -71,10 +71,56 @@ public class ProductTset {
         ProductQuery param = new ProductQuery();
         param.setCateName("冰箱");
         param.setBrandName("可口可乐");
-        param.setUpdateTimeMin(LocalDateTime.now().plusDays(-1));
+        param.setUpdateTimeMin(LocalDateTime.now().plusDays(-30));
         param.setUpdateTimeMax(LocalDateTime.now());
         JResult<PageResult<ProductVo>> pageResultJResult = productController.queryList(param);
         log.info("商品接口测试:queryProduct:{}", JSON.toJSON(pageResultJResult));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = { 1 })
+    void searchAfter(int argument) throws Exception {
+        ProductQuery param = new ProductQuery();
+        param.setPageSize(2);
+        //param.setCateName("冰箱");
+        //param.setBrandName("可口可乐");
+        param.setUpdateTimeMin(LocalDateTime.now().plusDays(-30));
+        param.setUpdateTimeMax(LocalDateTime.now());
+        JResult<PageResult<ProductVo>> pageResultJResult = productController.searchAfter(param);
+        log.info("商品接口测试:searchAfter1:{}", JSON.toJSON(pageResultJResult.getData()));
+        PageResult<ProductVo> data = pageResultJResult.getData();
+        param.setPitId(data.getPitId());
+        param.setLastSort(data.getLastSort());
+        JResult<PageResult<ProductVo>> pageResultJResult2 = productController.searchAfter(param);
+        log.info("商品接口测试:searchAfter2:{}", JSON.toJSON(pageResultJResult2.getData()));
+        PageResult<ProductVo> data2 = pageResultJResult2.getData();
+        param.setPitId(data2.getPitId());
+        param.setLastSort(data2.getLastSort());
+        JResult<PageResult<ProductVo>> pageResultJResult3 = productController.searchAfter(param);
+        log.info("商品接口测试:searchAfter3:{}", JSON.toJSON(pageResultJResult3.getData()));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = { 1 })
+    void scroll(int argument) throws Exception {
+        ProductQuery param = new ProductQuery();
+        param.setPageSize(4);
+        //param.setCateName("冰箱");
+        //param.setBrandName("可口可乐");
+        param.setUpdateTimeMin(LocalDateTime.now().plusDays(-30));
+        param.setUpdateTimeMax(LocalDateTime.now());
+        JResult<PageResult<ProductVo>> pageResultJResult = productController.scroll(param);
+        log.info("商品接口测试:scroll1:{}", JSON.toJSON(pageResultJResult.getData()));
+        PageResult<ProductVo> data = pageResultJResult.getData();
+        param.setPitId(data.getPitId());
+        param.setLastSort(data.getLastSort());
+        JResult<PageResult<ProductVo>> pageResultJResult2 = productController.scroll(param);
+        log.info("商品接口测试:scroll2:{}", JSON.toJSON(pageResultJResult2.getData()));
+        PageResult<ProductVo> data2 = pageResultJResult2.getData();
+        param.setPitId(data2.getPitId());
+        param.setLastSort(data2.getLastSort());
+        JResult<PageResult<ProductVo>> pageResultJResult3 = productController.scroll(param);
+        log.info("商品接口测试:scroll3:{}", JSON.toJSON(pageResultJResult3.getData()));
     }
 
     @ParameterizedTest
