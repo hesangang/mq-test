@@ -33,5 +33,5 @@ services:
     
 networks:
   default:
-    external:
-      name: redis_default
+    external: true
+    name: redis_default

@@ -57,5 +57,5 @@ volumes:
   
 networks:
   sonar-network:
-    external:
-      name: sg-net
+    external: true
+    name: sg-net

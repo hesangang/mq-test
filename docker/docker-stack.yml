@@ -84,5 +84,5 @@ configs:
 
 networks:
   elk:
-    external:
-      name: sg-net
+    external: true
+    name: sg-net

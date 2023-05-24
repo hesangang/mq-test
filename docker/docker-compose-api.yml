@@ -24,5 +24,5 @@ volumes:
 
 networks:
   sg-net:
-    external:
-      name: sg-net
+    external: true
+    name: sg-net
