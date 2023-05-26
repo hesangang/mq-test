@@ -26,6 +26,11 @@ services:
     command: ["mysqld","--server_id=1","--log_bin","--innodb_ft_min_token_size=1","--ft_min_word_len=1","--ngram_token_size=1","--secure_file_priv="]
     volumes:
       - db-data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      interval: 5s
+      timeout: 10s
+      retries: 10
   nacos:
     image: nacos/nacos-server:latest
     container_name: sg-nacos
@@ -43,8 +48,10 @@ services:
       - sg-net
     ports:
       - "8848:8848"
+      - "9848:9848"
     depends_on:
-      - mysql 
+      mysql:
+        condition: service_healthy
   rabbitmq:
     image: rabbitmq:3.8.3-management
     container_name: rabbitmq
