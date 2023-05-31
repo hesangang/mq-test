@@ -1,6 +1,6 @@
 package com.sg.mq.domain.validation.validator;
 
-import com.sg.mq.domain.enums.IEnum;
+import com.sg.mq.domain.validation.enums.IEnum;
 import com.sg.mq.domain.validation.annotaion.EnumValue;
 
 import javax.validation.ConstraintValidator;

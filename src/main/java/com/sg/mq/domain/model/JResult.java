@@ -1,7 +1,5 @@
 package com.sg.mq.domain.model;
 
-import cn.hutool.core.date.DateUtil;
-
 import java.io.Serializable;
 
 public class JResult<T> implements Serializable {
@@ -9,7 +7,7 @@ public class JResult<T> implements Serializable {
     private long code;
     private String msg;
     private T data;
-    private long time = DateUtil.currentSeconds();
+    private long time = System.currentTimeMillis() / 1000L;;
 
     protected JResult() {
     }

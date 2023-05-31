@@ -1,4 +1,4 @@
-package com.sg.mq.domain.common;
+package com.sg.mq.domain.thread;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;

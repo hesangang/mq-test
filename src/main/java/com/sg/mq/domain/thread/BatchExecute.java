@@ -1,4 +1,4 @@
-package com.sg.mq.domain.common;
+package com.sg.mq.domain.thread;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
