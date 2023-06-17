@@ -169,9 +169,9 @@
 
     <ssl desc="SSL settings">
         <!-- switches from https:// + wss:// to http:// + ws:// -->
-        <enable type="bool" desc="Controls whether SSL encryption between coolwsd and the network is enabled (do not disable for production deployment). If default is false, must first be compiled with SSL support to enable." default="true">true</enable>
+        <enable type="bool" desc="Controls whether SSL encryption between coolwsd and the network is enabled (do not disable for production deployment). If default is false, must first be compiled with SSL support to enable." default="false">false</enable>
         <!-- SSL off-load can be done in a proxy, if so disable SSL, and enable termination below in production -->
-        <termination desc="Connection via proxy where coolwsd acts as working via https, but actually uses http." type="bool" default="true">false</termination>
+        <termination desc="Connection via proxy where coolwsd acts as working via https, but actually uses http." type="bool" default="true">true</termination>
         <cert_file_path desc="Path to the cert file" relative="false">/etc/coolwsd/cert.pem</cert_file_path>
         <key_file_path desc="Path to the key file" relative="false">/etc/coolwsd/key.pem</key_file_path>
         <ca_file_path desc="Path to the ca file" relative="false">/etc/coolwsd/ca-chain.cert.pem</ca_file_path>
@@ -223,7 +223,10 @@
 
             <alias_groups desc="default mode is 'first' it allows only the first host when groups are not defined. set mode to 'groups' and define group to allow multiple host and its aliases" mode="groups">
                 <group>
-                    <host desc="hostname to allow or deny." allow="true">https://10.16.47.67|172.18.0.3|127.0.0.1:443</host>
+                    <host desc="hostname to allow or deny." allow="true">https://10.16.47.67|172.18.0.2|127.0.0.1|wutong-uat.oss-cn-beijing.aliyuncs.com:443</host>
+                </group>
+                <group>
+                    <host desc="hostname to allow or deny." allow="true">http://10.16.47.67|172.18.0.2:80</host>
                 </group>
             </alias_groups>
 
