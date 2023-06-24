@@ -19,3 +19,11 @@
 > echo 262144 >> /proc/sys/vm/max_map_count
 
 - https://www.ngui.cc/el/1232914.html?action=onClick
+
+4. Go to the project folder and run the `set_configuration.sh` script:
+
+    **Please note**: the action must be performed with **root** rights.
+
+    ```
+    bash set_configuration.sh
+    ```
