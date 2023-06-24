@@ -18,3 +18,4 @@
 
 > echo 262144 >> /proc/sys/vm/max_map_count
 
+- https://www.ngui.cc/el/1232914.html?action=onClick

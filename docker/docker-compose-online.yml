@@ -8,7 +8,7 @@ services:
     privileged: true
     environment:
       username: admin
-      password: 3g
+      password: admin
       extra_params: --o:ssl.enable=false
       DONT_GEN_SSL_CERT: 1
     cap_add:
@@ -27,9 +27,9 @@ services:
       #- ./conf/coolwsd.xml:/etc/coolwsd/coolwsd.xml
     environment:
       username: admin
-      password: 3g
-      #domain: localhost
-      aliasgroup1: https://172.20.10.9|127.0.0.1:443
+      password: admin
+      #domain: sangang.com
+      aliasgroup1: https://172.20.10.9|cb|sangang.com:443
       extra_params: --o:ssl.enable=false --o:ssl.termination=true
       #DONT_GEN_SSL_CERT: 1
     cap_add:
@@ -40,10 +40,10 @@ services:
       - sg-net
   web:
     image: nginx
-    container_name: nginx
+    container_name: web
     privileged: true
     ports:
-      - "80:80"
+      #- "80:80"
       - "443:443"
     volumes:
       - ./conf/default.conf:/etc/nginx/conf.d/default.conf
