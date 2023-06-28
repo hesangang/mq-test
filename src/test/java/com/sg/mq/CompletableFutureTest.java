@@ -5,10 +5,7 @@ import lombok.SneakyThrows;
 import java.util.Random;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 public class CompletableFutureTest {
 
@@ -27,8 +24,10 @@ public class CompletableFutureTest {
             @SneakyThrows
             @Override
             public Integer get() {
-                int i= 10/0;
-                return new Random().nextInt(10);
+                System.out.println(Thread.currentThread() + " handle....");
+                int i= 10/1;
+                return i;
+                //return new Random().nextInt(10);
             }
         },executor);
         /*future.handle(new BiFunction<Integer, Throwable, Integer>() {
@@ -39,29 +38,39 @@ public class CompletableFutureTest {
                 TimeUnit.SECONDS.sleep(3);
                 if(throwable==null){
                     result = param * 2;
-                    System.out.println("处理执行结果："+param);
+                    System.out.println(Thread.currentThread()+" 处理执行结果："+result);
                 }else{
-                    System.out.println("处理执行结果："+throwable.getMessage());
+                    System.out.println(Thread.currentThread()+" 处理执行结果："+throwable.getMessage());
                 }
                 return result;
             }
         });*/
+        future.thenAccept(i -> {
+            try {
+                TimeUnit.SECONDS.sleep(3);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread()+" 最终结果！"+i);
+            }
+        );
         future.whenComplete(new BiConsumer<Integer, Throwable>() {
             @Override
             public void accept(Integer integer, Throwable t) {
 
-                System.out.println("执行完成！"+t);
+                System.out.println(Thread.currentThread()+ " 执行完成！"+integer+" Exception="+t);
             }
         });
+
         future.exceptionally(new Function<Throwable, Integer>() {
             @Override
             public Integer apply(Throwable t) {
-                System.out.println("执行失败！"+t.getMessage());
+                System.out.println(Thread.currentThread()+" 执行失败！"+t.getMessage());
                 return 0;
             }
         });
 
-        //System.out.println("=="+future.get());
+        System.out.println("=="+future.get());
     }
 
 
