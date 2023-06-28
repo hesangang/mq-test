@@ -13,6 +13,11 @@
 > 运行 mvn test 覆盖率报告target/site/jacoco
 
 ## sonar
+
+## wsl
+
+ - windows wsl下载地址：https://aka.ms/wslstore
+ - wsl1升级wsl2: https://learn.microsoft.com/zh-cn/windows/wsl/install-manual#step-3---enable-virtual-machine-feature
  - 启动异常解决，打开Window 10 的cmd，执行以下命令：
 > wsl -d docker-desktop
 
