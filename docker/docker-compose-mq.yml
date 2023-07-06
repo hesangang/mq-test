@@ -1,0 +1,53 @@
+version: '3.3'
+services:
+  rabbitmq:
+    image: rabbitmq:3.8.3-management
+    container_name: rabbitmq
+    restart: always
+    hostname: myRabbitmq
+    ports:
+      - 15672:15672
+      - 5672:5672
+    volumes:
+      - rabbit-data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=root
+      - RABBITMQ_DEFAULT_PASS=root
+  pulsar:
+    image: "apachepulsar/pulsar:2.6.0"
+    container_name: sg-pulsar
+    command: bin/pulsar standalone
+    restart: on-failure
+    networks:
+      - sg-net
+    ports:
+      - "6650:6650"
+      - "8880:8080"
+    volumes:
+      - pulsar-data:/pulsar/data
+      - pulsar-conf:/pulsar/conf
+  pulsar-manager:
+    image: "apachepulsar/pulsar-manager:v0.2.0"
+    container_name: sg-pulsar-manager
+    restart: on-failure
+    networks:
+      - sg-net
+    ports:
+      - "9527:9527"
+      - "7750:7750"
+    depends_on:
+      - pulsar
+    links:
+      - pulsar
+    environment:
+      - SPRING_CONFIGURATION_FILE=/pulsar-manager/pulsar-manager/application.properties
+
+volumes:
+  rabbit-data:
+  pulsar-data:
+  pulsar-conf:
+
+networks:
+  sg-net:
+    external: true
+    name: sg-net
