@@ -19,9 +19,7 @@
  - windows wsl下载地址：https://aka.ms/wslstore
  - wsl1升级wsl2: https://learn.microsoft.com/zh-cn/windows/wsl/install-manual#step-3---enable-virtual-machine-feature
  - 启动异常解决，打开Window 10 的cmd，执行以下命令：
-> wsl -d docker-desktop
 
-> echo 262144 >> /proc/sys/vm/max_map_count
 
 - https://www.ngui.cc/el/1232914.html?action=onClick
 
