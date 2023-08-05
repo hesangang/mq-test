@@ -18,18 +18,23 @@ services:
     networks:
       - sg-net
   cb:
-    image: collabora/code:latest
+    image: collabora/code:22.05.4.1.1
     ports:
       - "9980:9980"
     container_name: cb
     privileged: true
-    #volumes:
-      #- ./conf/coolwsd.xml:/etc/coolwsd/coolwsd.xml
+    volumes:
+      - ./conf/cool.xml:/etc/coolwsd/coolwsd.xml
+      - ./conf/ssl/server.crt:/etc/ssl/certs/ca-certificates.crt:ro
+    extra_hosts:
+      - "${HOSTS1_KEY}:${HOSTS1_VALUE}"
+      - "${HOSTS2_KEY}:${HOSTS1_VALUE}"
     environment:
       username: admin
       password: admin
       #domain: sangang.com
-      aliasgroup1: https://172.20.10.9|cb|sangang.com:443
+      aliasgroup1: ${ALIASGROUP1}
+      aliasgroup2: ${ALIASGROUP2}
       extra_params: --o:ssl.enable=false --o:ssl.termination=true
       #DONT_GEN_SSL_CERT: 1
     cap_add:
