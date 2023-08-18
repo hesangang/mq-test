@@ -1,0 +1,22 @@
+version: '3'
+services:
+  rancher:
+    image: 'rancher/rancher:stable'
+    privileged: true
+    restart: always
+    container_name: rancher
+    volumes:
+      - rancher-data:/var/lib/rancher
+    ports:
+      - 8080:80
+      - 8443:443
+    environment:
+      - TZ=Asia/Shanghai
+
+volumes:
+  rancher-data:
+
+networks:
+  sg-net:
+    external: true
+    name: sg-net
