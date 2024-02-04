@@ -40,9 +40,9 @@ services:
       SONARQUBE_JDBC_URL: jdbc:postgresql://postgres:5432/sonar
 
 volumes:
+  sonar-extensions:
   postgres-postgresql:
   postgres-data:
-  sonar-extensions:
   sonar-logs:
   sonar-data:
   sonar-conf:
