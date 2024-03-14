@@ -1,12 +1,12 @@
 version: '3.2'
 
 services:
-  elasticsearch:
+  es01:
     build:
       context: elasticsearch/
       args:
         ELK_VERSION: $ELK_VERSION
-    container_name: elasticsearch
+    container_name: es01
     restart: always
     volumes:
       - type: bind
@@ -35,15 +35,15 @@ services:
         ELK_VERSION: $ELK_VERSION
     volumes:
       - type: bind
-        source: ./logstash/config/logstash.yml
-        target: /usr/share/logstash/config/logstash.yml
+        source: ./logstash/config
+        target: /usr/share/logstash/config
         read_only: true
       - type: bind
         source: ./logstash/pipeline
         target: /usr/share/logstash/pipeline
         read_only: true
       - type: bind
-        source: ./logstash/mysql/mysql-connector-java-5.1.26.jar
+        source: ./logstash/mysql/mysql-connector-java-8.0.19.jar
         target: /usr/share/logstash/mysql-connector-java.jar
     container_name: logstash
     restart: always
@@ -57,7 +57,7 @@ services:
     networks:
       - elk
     depends_on:
-      - elasticsearch
+      - es01
       - kafka1
 
   kibana:
@@ -77,7 +77,7 @@ services:
     networks:
       - elk
     depends_on:
-      - elasticsearch
+      - es01
   zoo1:
     image: confluentinc/cp-zookeeper:6.2.1
     hostname: zoo1
