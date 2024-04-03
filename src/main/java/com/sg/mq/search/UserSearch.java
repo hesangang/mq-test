@@ -13,7 +13,9 @@ import co.elastic.clients.elasticsearch.core.search.TotalHits;
 import co.elastic.clients.json.JsonData;
 import com.sg.mq.domain.entity.SysUser;
 import com.sg.mq.domain.model.PageResult;
+import com.sg.mq.domain.param.UserParam;
 import com.sg.mq.domain.query.UserQuery;
+import com.sg.mq.domain.util.IDGeneratorUtils;
 import com.sg.mq.domain.vo.UserVo;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +36,22 @@ public class UserSearch {
     private ElasticsearchClient client;
 
     String INDEX_NAME = "sys_user_idx";
+
+    @SneakyThrows
+    public boolean insert(UserParam user) {
+        // 分布式ID生成
+        user.setId(IDGeneratorUtils.getId());
+
+        SysUser entity = new SysUser();
+        BeanUtils.copyProperties(user, entity);
+
+        client.index(builder -> builder
+                .index(INDEX_NAME)
+                .id(entity.getId())
+                .document(entity)
+        );
+        return true;
+    }
 
     @SneakyThrows
     public UserVo getById(String id) {

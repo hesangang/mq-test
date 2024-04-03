@@ -40,7 +40,7 @@ public class UserController extends BaseController{
     @Operation(summary = "添加用户")
     @PostMapping(value = "add")
     public JResult<UserParam> addUser(@RequestBody @Validated UserParam param) {
-        final boolean insert = userService.insert(param);
+        final boolean insert = userSearch.insert(param);
         return success(param);
     }
 

@@ -67,8 +67,8 @@ spring:
   mybatis:
     mapper-locations: com.sg.mq.domain.mapper
   elasticsearch:
-    uris:
-      - http://localhost:9200
+    enable: true
+    uris: http://localhost:9200
     username: elastic
     password: sangang
 
