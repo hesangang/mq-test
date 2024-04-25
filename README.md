@@ -43,3 +43,13 @@
  mv cert.pem /etc/coolwsd/cert.pem
  mv root.crt.pem /etc/coolwsd/ca-chain.cert.pem
 ```
+
+## win多node管理切换nvm
+
+- 安装教程 https://blog.csdn.net/weixin_46115723/article/details/131260611
+
+- 切换到对应的node版本
+```agsl
+nvm use 10.15.3
+nvm use 20.12.2
+```
