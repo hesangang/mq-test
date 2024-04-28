@@ -50,6 +50,7 @@
 
 - 切换到对应的node版本
 ```agsl
+nvm list
 nvm use 10.15.3
 nvm use 20.12.2
 ```

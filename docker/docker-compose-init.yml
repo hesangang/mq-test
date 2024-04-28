@@ -1,0 +1,18 @@
+version: '3'
+services:
+  init:
+    container_name: init
+    image: registry.cn-hangzhou.aliyuncs.com/cloud-native-app-initializer/initializer:latest
+    restart: always
+    ports:
+      - 7002:7001
+    networks:
+      - sg-net
+
+volumes:
+  logs:
+
+networks:
+  sg-net:
+    external: true
+    name: sg-net
