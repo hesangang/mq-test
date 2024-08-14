@@ -1,0 +1,9 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:latest
+    container_name: ng
+    ports:
+      - "80:80"
+    volumes:
+      - ./conf/nginx-proxy.conf:/etc/nginx/nginx.conf:ro
