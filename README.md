@@ -48,6 +48,16 @@
 
 - 安装教程 https://blog.csdn.net/weixin_46115723/article/details/131260611
 
+
+#### 查看可用的node版本
+> nvm list available
+
+#### 安装指定版本
+> nvm install 10.15.3
+
+#### 安装指定yarn版本
+> npm install yarn@1.7.0
+
 - 切换到对应的node版本
 ```agsl
 nvm list
