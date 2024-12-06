@@ -86,7 +86,7 @@ services:
     networks:
       - sg-net
     restart: always
-#https://github.com/alibaba/nacos/blob/develop/distribution/conf/mysql-schema.sql
+
   nacos:
     image: nacos/nacos-server:${NACOS_VERSION}
     container_name: sg-nacos
