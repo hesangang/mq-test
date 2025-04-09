@@ -1,0 +1,26 @@
+version: '3.2'
+services:
+  oracle19c:
+    image: registry.cn-hangzhou.aliyuncs.com/zhuyijun/oracle:19c
+    container_name: oracle19c
+    restart: always
+    ports:
+      - "1521:1521"
+    environment:
+      ORACLE_SID: orcl
+      ORACLE_PDB: orclpdb
+      ORACLE_PWD: Jobs@666
+      ORACLE_EDITION: standard
+      ORACLE_CHARACTERSET: AL32UTF8
+    volumes:
+      - oracle19c_data:/opt/oracle/oradata
+    networks:
+      - sg-net
+
+volumes:
+  oracle19c_data:
+
+networks:
+  sg-net:
+    external: true
+    name: sg-net
