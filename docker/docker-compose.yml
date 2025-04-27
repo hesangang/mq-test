@@ -109,7 +109,19 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-
+  frpc:
+    image: stilleshan/frpc:0.51.3
+    container_name: frpc
+    restart: always
+    volumes:
+      - ./frpc.ini:/frp/frpc.ini
+    healthcheck:
+      test: ["CMD", "pgrep", "frpc"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - sg-net
 
 volumes:
   redis_data:

@@ -16,9 +16,26 @@ services:
       - oracle19c_data:/opt/oracle/oradata
     networks:
       - sg-net
+  oracle9:
+    image: roboxes/oracle9:latest
+    container_name: oracle9
+    restart: always
+    ports:
+      - "1522:1521"
+    environment:
+      ORACLE_SID: orcl
+      ORACLE_PDB: orclpdb
+      ORACLE_PWD: root
+      ORACLE_EDITION: standard
+      ORACLE_CHARACTERSET: AL32UTF8
+    volumes:
+      - oracle9_data:/opt/oracle/oradata
+    networks:
+      - sg-net
 
 volumes:
   oracle19c_data:
+  oracle9_data:
 
 networks:
   sg-net:
