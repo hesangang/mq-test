@@ -1,8 +1,7 @@
-version: '3.3'
 services:
   redis:
     image: redis:7.2.4
-    container_name: sg-redis
+    container_name: redis
     #command: redis-server --requirepass ${REDIS_PASSWORD} --maxmemory 128mb --maxmemory-policy allkeys-lru
     command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
     ports:
@@ -10,12 +9,12 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - sg-net
+      - net
     restart: always
 
   mysql:
     image: mysql:5.7.18
-    container_name: sg-mysql
+    container_name: mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${DATASOURCE_PASSWORD}
       - TZ=${TIMEZONE}
@@ -32,7 +31,7 @@ services:
       - mysql_data:/var/lib/mysql
       - ./init.sql:/data/application/init.sql
     networks:
-      - sg-net
+      - net
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-uroot", "-p${DATASOURCE_PASSWORD}"]
       interval: 10s
@@ -42,7 +41,7 @@ services:
 
   minio:
     image: quay.io/minio/minio:RELEASE.2023-12-20T01-00-02Z
-    container_name: sg-minio
+    container_name: minio
     command: server --console-address ":9001" /data
     ports:
       - ${MINIO_PORT}:9000
@@ -54,7 +53,7 @@ services:
     volumes:
       - minio_data:/data
     networks:
-      - sg-net
+      - net
     restart: always
 
   es01:
@@ -84,25 +83,25 @@ services:
       timeout: 10s
       retries: 120
     networks:
-      - sg-net
+      - net
     restart: always
 
   nacos:
     image: nacos/nacos-server:${NACOS_VERSION}
-    container_name: sg-nacos
+    container_name: nacos
     restart: always
     environment:
       - PREFER_HOST_MODE=hostname
       - MODE=standalone
       - SPRING_DATASOURCE_PLATFORM=mysql
-      - MYSQL_SERVICE_HOST=sg-mysql
+      - MYSQL_SERVICE_HOST=mysql
       - MYSQL_SERVICE_DB_NAME=nacos-db
       - MYSQL_SERVICE_PORT=3306
       - MYSQL_SERVICE_USER=root
       - MYSQL_SERVICE_PASSWORD=${DATASOURCE_PASSWORD}
       - MYSQL_SERVICE_DB_PARAM=characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
     networks:
-      - sg-net
+      - net
     ports:
       - "8848:8848"
       - "9848:9848"
@@ -121,7 +120,7 @@ services:
       timeout: 10s
       retries: 3
     networks:
-      - sg-net
+      - net
 
 volumes:
   redis_data:
@@ -130,6 +129,6 @@ volumes:
   esdata01:
 
 networks:
-  sg-net:
+  net:
     external: true
     name: sg-net
