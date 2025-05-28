@@ -11,6 +11,18 @@ services:
     networks:
       - net
     restart: always
+  rds:
+    image: redis/redisinsight:latest
+    container_name: rds
+    ports:
+      - "5540:5540"
+    volumes:
+      - redisinsight_data:/data
+    depends_on:
+      - redis
+    networks:
+      - net
+    restart: always
 
   mysql:
     image: mysql:5.7.18
@@ -132,6 +144,7 @@ services:
 
 volumes:
   redis_data:
+  redisinsight_data:
   mysql_data:
   minio_data:
   esdata01:
