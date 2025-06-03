@@ -32,10 +32,24 @@ services:
       - oracle9_data:/opt/oracle/oradata
     networks:
       - sg-net
+  oracle11g:
+    image: wnameless/oracle-xe-11g-r2
+    container_name: oracle11g
+    ports:
+      - "1521:1521"   # Oracle 数据库端口
+      - "8180:8080"   # APEX 管理界面端口（如启用）
+    environment:
+      - ORACLE_ALLOW_REMOTE=true  # 允许远程连接
+    volumes:
+      - oracle11g-data:/u01/app/oracle  # 持久化数据
+    restart: unless-stopped
+    networks:
+      - sg-net
 
 volumes:
   oracle19c_data:
   oracle9_data:
+  oracle11g-data:
 
 networks:
   sg-net:
