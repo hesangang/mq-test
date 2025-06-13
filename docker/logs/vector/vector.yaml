@@ -1,0 +1,56 @@
+
+# ============ Sources ============
+
+sources:
+  springboot_logs:
+    type: file
+    include:
+      - /app/logs/*.log
+    ignore_older: 86400
+    multiline:
+      start_pattern: '^\d{4}-\d{2}-\d{2}'
+      condition_pattern: '^\d{4}-\d{2}-\d{2}'
+      mode: halt_before
+      timeout_ms: 1000
+  internal_metrics:
+    type: internal_metrics
+
+# ============ Transforms ============
+
+transforms:
+  parse_springboot:
+    type: remap
+    inputs: [springboot_logs]
+    source: |
+      .host, err = get_hostname()  
+      if err != null {
+        .host = "unknown"
+      }
+      .message = string!(.message)
+      parsed, err = parse_regex(.message, r'^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\s+(?P<level>[A-Z]+)\s+\d+\s+--- \[.*?\]\s+(?P<class>[\w\.]+)\s+:\s+(?P<msg>.*)$')
+      if err == null {
+        .timestamp = parsed.timestamp
+        .level = parsed.level
+        .class = parsed.class
+        .msg = parsed.msg
+      }
+
+# ============ Sinks ============
+
+sinks:
+  to_loki:
+    type: loki
+    inputs: [parse_springboot]
+    endpoint: http://loki:3100
+    encoding:
+      codec: json
+    labels:
+      job: "springboot"
+      host: "{{ host }}"
+      level: "{{ level }}"
+      class: "{{ class }}"
+
+  to_prometheus:
+    type: prometheus_exporter
+    inputs: [internal_metrics]               # 必须指定，且为空数组
+    address: "0.0.0.0:8686"

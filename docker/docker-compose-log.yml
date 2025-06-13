@@ -1,0 +1,56 @@
+services:
+  # 🟣 Loki：日志存储
+  loki:
+    image: grafana/loki:2.9.2
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/config.yaml
+    volumes:
+      - ./logs/loki/config.yaml:/etc/loki/config.yaml
+      - loki-data:/loki
+    networks:
+      - net
+  # 🟢 Prometheus：用于监控 Vector 指标
+  prometheus:
+    image: prom/prometheus:v2.51.1
+    container_name: prometheus
+    volumes:
+      - ./logs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - net
+  # 🟡 Grafana：日志展示界面
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./logs/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - net
+  # 🔵 Vector：日志采集器
+  vector:
+    image: timberio/vector:0.33.0-alpine
+    container_name: vector
+    ports:
+      - "8686:8686"  # Prometheus metrics
+    volumes:
+      - ./logs/vector/vector.yaml:/etc/vector/vector.yaml:ro
+      - ./logs/applogs:/app/logs:ro
+    networks:
+      - net
+
+volumes:
+  grafana-storage:
+  loki-data:
+
+networks:
+  net:
+    external: true
+    name: sg-net
