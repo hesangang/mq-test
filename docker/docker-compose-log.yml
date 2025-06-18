@@ -12,6 +12,20 @@ services:
       - loki-data:/loki
     networks:
       - net
+  tempo:
+    image: grafana/tempo:2.8.0
+    container_name: tempo
+    restart: unless-stopped
+    ports:
+      - "3200:3200"   # 查询服务
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+    volumes:
+      - ./logs/tempo/tempo.yaml:/etc/tempo.yaml
+      - tempo-data:/tmp/tempo   # 本地 traces 存储
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    networks:
+      - net
   # 🟢 Prometheus：用于监控 Vector 指标
   prometheus:
     image: prom/prometheus:v2.51.1
@@ -53,6 +67,7 @@ services:
 volumes:
   grafana-storage:
   loki-data:
+  tempo-data:
 
 networks:
   net:
