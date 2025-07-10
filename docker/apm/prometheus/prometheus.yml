@@ -1,0 +1,14 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'vector'
+    static_configs:
+      - targets: ['vector:8686']
+  - job_name: 'springboot-actuator'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets:
+          - 'his-regist:5002'            # ✅ Docker Compose 服务名
+          #- 'host.docker.internal:5002' # ✅ 本机测试
+          #- '192.168.1.30:5002'         # ✅ 服务器 IP

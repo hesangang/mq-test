@@ -5,7 +5,7 @@ sources:
   springboot_logs:
     type: file
     include:
-      - /app/logs/*.log
+      - /logs/**/*.log
     ignore_older: 86400
     multiline:
       start_pattern: '^\d{4}-\d{2}-\d{2}'
