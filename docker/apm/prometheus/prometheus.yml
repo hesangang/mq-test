@@ -15,6 +15,7 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets:
+          - 'his-message:5002'
           - 'his-regist:5002'            # ✅ Docker Compose 服务名
           #- 'host.docker.internal:5002' # ✅ 本机测试
           #- '192.168.1.30:5002'         # ✅ 服务器 IP
