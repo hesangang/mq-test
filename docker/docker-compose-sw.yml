@@ -1,0 +1,35 @@
+services:
+  oap:
+    image: apache/skywalking-oap-server:9.7.0
+    container_name: sw-oap
+    ports:
+      - "11800:11800"   # gRPC 接入点
+      - "12800:12800"   # REST 接入点
+      - "1234:1234"     # Prometheus 采集端口
+    environment:
+      - SW_STORAGE=h2
+      - SW_TELEMETRY=prometheus
+    volumes:
+      - sw_data:/skywalking/data
+    networks:
+      - net
+
+  ui:
+    image: apache/skywalking-ui:9.7.0
+    container_name: sw-ui
+    ports:
+      - "5000:8080"
+    environment:
+      - SW_OAP_ADDRESS=http://sw-oap:12800
+    depends_on:
+      - oap
+    networks:
+      - net
+
+volumes:
+  sw_data:
+
+networks:
+  net:
+    external: true
+    name: sg-net
