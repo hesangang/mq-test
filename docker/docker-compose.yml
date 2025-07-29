@@ -32,6 +32,7 @@ services:
       MYSQL_DATABASE: nacos_config
       MYSQL_USER: nacos
       MYSQL_PASSWORD: nacos
+      TZ: Asia/Shanghai
     command:
       --max_connections=1000
       --character-set-server=utf8mb4
