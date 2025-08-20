@@ -4,7 +4,7 @@ services:
     container_name: pc
     restart: unless-stopped
     ports:
-      - "9000:9000"
+      - "9900:9000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
