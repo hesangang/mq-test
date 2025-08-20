@@ -16,7 +16,7 @@ services:
     restart:
       unless-stopped
     networks:
-      - sg-net
+      - my-net
   cb:
     image: collabora/code:22.05.4.1.1
     ports:
@@ -42,7 +42,7 @@ services:
     restart:
       always
     networks:
-      - sg-net
+      - my-net
   web:
     image: nginx
     container_name: web
@@ -57,10 +57,10 @@ services:
     restart:
       always
     networks:
-      - sg-net
+      - my-net
 
 
 networks:
-  sg-net:
+  my-net:
     external: true
-    name: sg-net
+    name: my-net

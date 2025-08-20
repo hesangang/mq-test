@@ -10,7 +10,7 @@ services:
     restart: unless-stopped
     image: ollama/ollama:${OLLAMA_DOCKER_TAG-latest}
     networks:
-      - sg-net
+      - my-net
 
   open-webui:
     build:
@@ -33,7 +33,7 @@ services:
       - host.docker.internal:host-gateway
     restart: unless-stopped
     networks:
-      - sg-net
+      - my-net
 
 volumes:
   ollama: {}
@@ -41,6 +41,6 @@ volumes:
 
 
 networks:
-  sg-net:
+  my-net:
     external: true
-    name: sg-net
+    name: my-net

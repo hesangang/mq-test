@@ -85,4 +85,4 @@ configs:
 networks:
   elk:
     external: true
-    name: sg-net
+    name: my-net

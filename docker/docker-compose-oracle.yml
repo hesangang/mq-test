@@ -15,7 +15,7 @@ services:
     volumes:
       - oracle19c_data:/opt/oracle/oradata
     networks:
-      - sg-net
+      - my-net
   oracle9:
     image: roboxes/oracle9:latest
     container_name: oracle9
@@ -31,7 +31,7 @@ services:
     volumes:
       - oracle9_data:/opt/oracle/oradata
     networks:
-      - sg-net
+      - my-net
   oracle11g:
     image: wnameless/oracle-xe-11g-r2
     container_name: oracle11g
@@ -44,7 +44,7 @@ services:
       - oracle11g-data:/u01/app/oracle  # 持久化数据
     restart: unless-stopped
     networks:
-      - sg-net
+      - my-net
 
 volumes:
   oracle19c_data:
@@ -52,6 +52,6 @@ volumes:
   oracle11g-data:
 
 networks:
-  sg-net:
+  my-net:
     external: true
-    name: sg-net
+    name: my-net

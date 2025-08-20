@@ -153,4 +153,4 @@ volumes:
 networks:
   net:
     external: true
-    name: sg-net
+    name: my-net

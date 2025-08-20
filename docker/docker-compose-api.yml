@@ -11,7 +11,7 @@ services:
     environment:
       TZ: Asia/Shanghai
     networks:
-      - sg-net
+      - my-net
     ports:
       - 8085:8080
     volumes:
@@ -23,6 +23,6 @@ volumes:
   logs:
 
 networks:
-  sg-net:
+  my-net:
     external: true
-    name: sg-net
+    name: my-net

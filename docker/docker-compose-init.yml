@@ -7,12 +7,12 @@ services:
     ports:
       - 7002:7001
     networks:
-      - sg-net
+      - my-net
 
 volumes:
   logs:
 
 networks:
-  sg-net:
+  my-net:
     external: true
-    name: sg-net
+    name: my-net

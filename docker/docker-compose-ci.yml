@@ -41,7 +41,7 @@ volumes:
 networks:
   net:
     external: true
-    name: tfwk-net
+    name: my-net
 
 
 

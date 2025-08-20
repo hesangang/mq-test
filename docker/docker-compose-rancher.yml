@@ -17,6 +17,6 @@ volumes:
   rancher-data:
 
 networks:
-  sg-net:
+  my-net:
     external: true
-    name: sg-net
+    name: my-net

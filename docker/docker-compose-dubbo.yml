@@ -42,4 +42,4 @@ volumes:
 networks:
   dubbo:
     external: true
-    name: sg-net
+    name: my-net

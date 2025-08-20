@@ -10,7 +10,7 @@ services:
     volumes:
       - app_data:/var/www/html
     networks:
-      - sg-net
+      - my-net
   only:
     container_name: only
     image: onlyoffice/documentserver:latest
@@ -40,7 +40,7 @@ services:
       - document_data:/var/www/onlyoffice/Data
       - document_log:/var/log/onlyoffice
     networks:
-      - sg-net
+      - my-net
   nginx:
     container_name: nginx
     image: nginx
@@ -53,7 +53,7 @@ services:
       #- ./conf/ssl:/usr/local/ssl
       #- app_data:/var/www/html
     networks:
-      - sg-net
+      - my-net
   rabbitmq:
     image: rabbitmq:3.8.3-management
     container_name: rabbitmq
@@ -68,7 +68,7 @@ services:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
     networks:
-      - sg-net
+      - my-net
 
 
 volumes:
@@ -79,6 +79,6 @@ volumes:
   mysql_data:
 
 networks:
-  sg-net:
+  my-net:
     external: true
-    name: sg-net
+    name: my-net
