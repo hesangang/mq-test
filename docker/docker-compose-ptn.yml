@@ -1,7 +1,7 @@
 services:
   portainer:
     image: portainer/portainer-ce:latest
-    container_name: pc
+    container_name: ptn
     restart: unless-stopped
     ports:
       - "9900:9000"
