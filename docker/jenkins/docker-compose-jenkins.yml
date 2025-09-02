@@ -1,0 +1,26 @@
+services:
+  jenkins:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    #image: jenkins/jenkins:lts
+    container_name: jenkins
+    restart: always
+    environment:
+      - JENKINS_OPTS=--prefix=/jenkins
+    ports:
+      - '8099:8080'
+      - '50000:50000'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - jenkins_home:/var/jenkins_home
+    networks:
+      - net
+
+volumes:
+  jenkins_home:
+
+networks:
+  net:
+    external: true
+    name: my-net

@@ -1,0 +1,34 @@
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:18.2.5-ce.0
+    container_name: gitlab
+    restart: always
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://36.112.209.242:3690/gitlab'
+        gitlab_rails['gitlab_shell_ssh_port'] = 2424
+        gitlab_workhorse['trusted_proxies'] = ['172.17.0.1/16', '192.168.1.0/24', '36.112.209.242']
+    ports:
+      - '8929:3690'
+      - '443:443'
+      - '2424:22'
+    volumes:
+      - '$GITLAB_HOME/config:/etc/gitlab'
+      - '$GITLAB_HOME/logs:/var/log/gitlab'
+      - '$GITLAB_HOME/data:/var/opt/gitlab'
+    shm_size: '256m'
+    networks:
+      - net
+
+volumes:
+  GITLAB_CONFIG:
+  GITLAB_LOGS:
+  GITLAB_DATA:
+
+networks:
+  net:
+    external: true
+    name: my-net
+
+
+
