@@ -31,6 +31,10 @@ services:
     image: prom/prometheus:v2.51.1
     container_name: prometheus
     restart: unless-stopped
+    command:
+      - --web.enable-remote-write-receiver
+      - --enable-feature=native-histograms
+      - --config.file=/etc/prometheus/prometheus.yml
     volumes:
       - ./apm/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
@@ -87,6 +91,21 @@ services:
       - REDIS_ADDR=redis://redis:6379
     networks:
       - net
+  k6: # 官方k6Prometheus Dashboard的ID:19665
+    image: grafana/k6:latest
+    container_name: k6
+    depends_on:
+      - prometheus
+    volumes:
+      - ./apm/k6-scripts:/scripts
+    networks:
+      - net
+    environment:
+      - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
+    entrypoint: >
+      sh -c "k6 run --out experimental-prometheus-rw --out web-dashboard /scripts/regist.js"
+    ports:
+      - "5665:5665"
 
 volumes:
   grafana-storage:
