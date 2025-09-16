@@ -1,0 +1,19 @@
+services:
+  k6: # 官方k6Prometheus Dashboard的ID:19665
+    image: grafana/k6:latest
+    container_name: k6
+    volumes:
+      - ./apm/k6-scripts:/scripts
+    networks:
+      - net
+    environment:
+      - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
+    entrypoint: >
+      sh -c "k6 run --out experimental-prometheus-rw --out web-dashboard /scripts/regist.js"
+    ports:
+      - "5665:5665"
+
+networks:
+  net:
+    external: true
+    name: my-net
