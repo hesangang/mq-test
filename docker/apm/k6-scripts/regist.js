@@ -7,8 +7,9 @@ export const options = {
     duration: '60s',
 };
 
-const BASE_URL = 'http://his-regist:8080'; // TODO: 替换成实际地址
-const CHANNEL = '114';
+//const BASE_URL = 'http://192.168.1.30:8080';
+const BASE_URL = 'http://his-regist:8080';
+const CHANNEL = '114YY';
 
 export default function () {
     // 1. 查询科室列表
