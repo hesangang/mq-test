@@ -18,7 +18,7 @@ export const options = {
 
 const BASE_URL = 'http://his-regist:8080';
 //const BASE_URL = 'http://192.168.1.30:8080';
-const CHANNEL = '114YY';
+const CHANNEL = 'online';
 
 let stockIds = ['45'];
 
