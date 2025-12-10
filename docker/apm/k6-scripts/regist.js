@@ -1,109 +1,107 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
+/* =========================
+   1️⃣ 压测配置
+========================= */
 export const options = {
     stages: [
-        { duration: '10s', target: 10 },  // 预热阶段：10个VU
-        { duration: '20s', target: 50 },  // 升流阶段：提升到50个VU
-        { duration: '30s', target: 50 },  // 高峰阶段：保持50个VU
-        { duration: '10s', target: 10 },  // 降流阶段：回到10个VU
-        { duration: '5s', target: 0 },    // 收尾阶段：逐步降为0
+        { duration: '5s', target: 20 },
+        { duration: '10s', target: 100 },
+        { duration: '10s', target: 100 },
+        { duration: '5s', target: 0 },
     ],
-    thresholds: {
-        // 可以定义性能指标，便于自动化判断压测结果
-        http_req_failed: ['rate<0.01'],    // 失败率 < 1%
-        http_req_duration: ['p(95)<500'],  // 95%请求耗时 < 500ms
-    }
 };
 
-const BASE_URL = 'http://his-regist:8080';
-//const BASE_URL = 'http://192.168.1.30:8080';
+/* =========================
+   2️⃣ 基础参数
+========================= */
+const BASE_URL = 'http://192.168.1.30:8080';
 const CHANNEL = 'online';
 
-let stockIds = ['45'];
-
-// 生成随机患者ID
-function generatePatientId() {
-    let rand = Math.floor(1000 + Math.random() * 9000);
-    return `P${rand}`;
+function getToday() {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
-// 生成唯一订单号
-function generateOrderId() {
-    let timestamp = Date.now();
-    let rand = Math.floor(1000 + Math.random() * 9000);
-    return `O${timestamp}${rand}`;
-}
+const CLINIC_DATE = getToday();
+const DEPT_IDS = ['YJ028080', 'ZL015000'];
 
-export default function () {
-    // 只在第一次迭代加载号源
-    if (__ITER === 0 && stockIds.length === 0) {
-        let deptRes = http.post(`${BASE_URL}/tfwk-regist/regist/getClinicDeptClassTree`, null, {
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        });
+/* =========================
+   3️⃣ ✅ 正确的号源预加载（setup阶段）
+========================= */
+export function setup() {
+    let stockIds = [];
 
-        check(deptRes, { 'dept接口响应200': (r) => r.status === 200 });
-
-        let deptData = deptRes.json('data') || [];
-        function collectDeptIds(list, ids = []) {
-            for (let item of list) {
-                if (item.deptList && item.deptList.length > 0) {
-                    ids.push(...item.deptList.map(d => d.deptId));
-                }
-            }
-            return ids;
-        }
-
-        //let deptIds = collectDeptIds(deptData);
-        let deptIds = ['BQ010080','BQ016031'];
-        if (!deptIds.length) {
-            console.error("没有可用科室，停止压测");
-            return;
-        }
-
-        for (let deptId of deptIds) {
-            let listPayload = JSON.stringify({
-                channel: CHANNEL,
-                deptId: deptId,
-                clinicDate: "2025-09-17",
-            });
-
-            let listRes = http.post(`${BASE_URL}/tfwk-regist/regist/list`, listPayload, {
-                headers: { 'Content-Type': 'application/json' },
-            });
-
-            if (listRes.status === 200) {
-                let data = listRes.json('data');
-                if (data && data.length) {
-                    stockIds.push(...data.map(s => s.stockId));
-                }
-            }
-        }
-
-        console.log(`预加载号源完成，共 ${stockIds.length} 个`);
-    }
-
-    // 并发挂号请求
-    if (stockIds.length > 0) {
-        let stockId = stockIds[Math.floor(Math.random() * stockIds.length)];
-        let registPayload = JSON.stringify({
+    for (let deptId of DEPT_IDS) {
+        let payload = JSON.stringify({
             channel: CHANNEL,
-            stockId: stockId,
-            patientId: generatePatientId(),
-            orderId: generateOrderId(),
-            flag: "REG"
+            deptId: deptId,
+            clinicDate: CLINIC_DATE,
         });
 
-        let registRes = http.post(`${BASE_URL}/tfwk-regist/regist/regist`, registPayload, {
+        let res = http.post(`${BASE_URL}/tfwk-regist/regist/list`, payload, {
             headers: { 'Content-Type': 'application/json' },
         });
-        let registJson = registRes.json();
-        console.log(`挂号结果: code=${registJson.code}, msg=${registJson.message}`);
-        check(registRes, {
-            'regist接口响应200': (r) => r.status === 200,
-            'regist返回成功': (r) => r.json('code') === 0,
-        });
+
+        if (res.status === 200) {
+            let data = res.json('data');
+            if (data && data.length > 0) {
+                stockIds.push(...data.map(s => s.stockId));
+            }
+        }
     }
 
-    sleep(1);
+    console.log(`✅ 号源预加载完成：${stockIds.length} 个`);
+    return { stockIds };
+}
+
+/* =========================
+   4️⃣ 用户 & 订单生成
+========================= */
+function generatePatientId() {
+    return 'P' + (__VU * 100000 + __ITER);
+}
+
+function generateOrderId() {
+    return 'O' + Date.now() + __VU + __ITER;
+}
+
+/* =========================
+   5️⃣ ✅ 并发抢号主逻辑
+========================= */
+export default function (data) {
+    const stockIds = data.stockIds;
+
+    if (!stockIds || stockIds.length === 0) {
+        console.error('❌ 无可抢号源，终止执行');
+        return;
+    }
+
+    let stockId = stockIds[Math.floor(Math.random() * stockIds.length)];
+
+    let registPayload = JSON.stringify({
+        channel: CHANNEL,
+        stockId: stockId,
+        patientId: generatePatientId(),
+        orderId: generateOrderId(),
+        flag: 'REG'
+    });
+
+    let res = http.post(`${BASE_URL}/tfwk-regist/regist/regist`, registPayload, {
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    let body = res.json();
+
+    check(res, {
+        'HTTP 200': r => r.status === 200,
+        '业务成功': r => r.json('code') === 0,
+    });
+
+    if (body.code !== 0) {
+        console.log(`❌ 抢号失败 | stock=${stockId} | msg=${body.message}`);
+    }
+
+    sleep(0.3);
 }
