@@ -16,7 +16,8 @@ export const options = {
 /* =========================
    2️⃣ 基础参数
 ========================= */
-const BASE_URL = 'http://192.168.1.30:8080';
+const BASE_URL = 'http://his-regist:8080';
+/*const BASE_URL = 'http://192.168.1.30:8080';*/
 const CHANNEL = 'online';
 
 function getToday() {
@@ -25,13 +26,16 @@ function getToday() {
 }
 
 const CLINIC_DATE = getToday();
-const DEPT_IDS = ['YJ028080', 'ZL015000'];
+const DEPT_IDS = ['YJ028080', 'BQ009033'];
 
 /* =========================
    3️⃣ ✅ 正确的号源预加载（setup阶段）
 ========================= */
 export function setup() {
     let stockIds = [];
+
+    console.log(`📅 当前挂号日期：${CLINIC_DATE}`);
+    console.log(`🏥 参与抢号科室：${DEPT_IDS.join(',')}`);
 
     for (let deptId of DEPT_IDS) {
         let payload = JSON.stringify({
@@ -44,15 +48,23 @@ export function setup() {
             headers: { 'Content-Type': 'application/json' },
         });
 
-        if (res.status === 200) {
-            let data = res.json('data');
-            if (data && data.length > 0) {
-                stockIds.push(...data.map(s => s.stockId));
-            }
+        if (res.status !== 200) {
+            console.error(`❌ 科室 ${deptId} 接口失败 HTTP=${res.status}`);
+            continue;
         }
+
+        let data = res.json('data');
+
+        if (!data || data.length === 0) {
+            console.warn(`⚠️ 科室 ${deptId} 在 ${CLINIC_DATE} 下无号源`);
+            continue;
+        }
+
+        console.log(`✅ 科室 ${deptId} 号源数量：${data.length}`);
+        stockIds.push(...data.map(s => s.stockId));
     }
 
-    console.log(`✅ 号源预加载完成：${stockIds.length} 个`);
+    console.log(`🎯 最终参与抢号总数：${stockIds.length}`);
     return { stockIds };
 }
 
@@ -74,7 +86,7 @@ export default function (data) {
     const stockIds = data.stockIds;
 
     if (!stockIds || stockIds.length === 0) {
-        console.error('❌ 无可抢号源，终止执行');
+        /*console.error('❌ 无可抢号源，终止执行');*/
         return;
     }
 
