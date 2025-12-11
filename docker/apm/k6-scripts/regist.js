@@ -16,8 +16,8 @@ export const options = {
 /* =========================
    2️⃣ 基础参数
 ========================= */
+//const BASE_URL = 'http://192.168.1.30:8080';
 const BASE_URL = 'http://his-regist:8080';
-/*const BASE_URL = 'http://192.168.1.30:8080';*/
 const CHANNEL = 'online';
 
 function getToday() {
@@ -25,6 +25,7 @@ function getToday() {
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
+//const CLINIC_DATE = '2025-12-16';
 const CLINIC_DATE = getToday();
 const DEPT_IDS = ['YJ028080', 'BQ009033'];
 
@@ -91,12 +92,14 @@ export default function (data) {
     }
 
     let stockId = stockIds[Math.floor(Math.random() * stockIds.length)];
+    let orderId = generateOrderId();
+    let patientId = generatePatientId();
 
     let registPayload = JSON.stringify({
         channel: CHANNEL,
         stockId: stockId,
-        patientId: generatePatientId(),
-        orderId: generateOrderId(),
+        patientId: patientId,
+        orderId: orderId,
         flag: 'REG'
     });
 
@@ -107,12 +110,32 @@ export default function (data) {
     let body = res.json();
 
     check(res, {
-        'HTTP 200': r => r.status === 200,
-        '业务成功': r => r.json('code') === 0,
+        '挂号HTTP 200': r => r.status === 200,
+        '挂号成功': r => r.json('code') === 0,
     });
 
     if (body.code !== 0) {
         console.log(`❌ 抢号失败 | stock=${stockId} | msg=${body.message}`);
+    }
+
+    // 随机决定是否退号（比如20%概率）
+    if (Math.random() < 0.2) {
+        let refundRes = http.post(`${BASE_URL}/tfwk-regist/regist/refund/${orderId}/REG`, {}, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+
+        let refundBody = refundRes.json();
+
+        check(refundRes, {
+            '退号HTTP 200': r => r.status === 200,
+            '退号成功': r => r.json('code') === 0,
+        });
+
+        if (refundBody.code !== 0) {
+            console.log(`❌ 退号失败 | orderId=${orderId} | msg=${refundBody.message}`);
+        } else {
+            console.log(`✅ 退号成功 | orderId=${orderId}`);
+        }
     }
 
     sleep(0.3);
