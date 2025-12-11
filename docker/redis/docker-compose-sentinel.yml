@@ -1,7 +1,7 @@
 version: '3'
 services:
   sentinel1:
-    image: redis:7.0
+    image: redis:7.2.11
     container_name: redis-sentinel-1
     env_file:
       - .env
@@ -11,7 +11,7 @@ services:
     volumes:
       - ./sentinel1.conf:/usr/local/etc/redis/sentinel.conf
   sentinel2:
-    image: redis:7.0
+    image: redis:7.2.11
     container_name: redis-sentinel-2
     env_file:
       - .env
@@ -21,7 +21,7 @@ services:
     volumes:
       - ./sentinel1.conf:/usr/local/etc/redis/sentinel.conf
   sentinel3:
-    image: redis:7.0
+    image: redis:7.2.11
     container_name: redis-sentinel-3
     env_file:
       - .env

@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: redis                               #容器名称
-          image: redis:7.0                       #redis镜像
+          image: redis:7.2.11                       #redis镜像
           imagePullPolicy: IfNotPresent             #镜像拉取策略
           command:                                  #定义容器的启动命令和参数
             - "redis-server"

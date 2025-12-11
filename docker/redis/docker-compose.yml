@@ -1,7 +1,7 @@
 version: '3'
 services:
   master:
-    image: redis:7.0
+    image: redis:7.2.11
     container_name: redis-master
     command: bash -c "redis-server  --requirepass 123456  --masterauth 123456 --protected-mode no --slave-announce-ip ${ANNOUNCE_IP} --slave-announce-port 6379"
     volumes:
@@ -9,7 +9,7 @@ services:
     ports:
       - 6379:6379
   slave1:
-    image: redis:7.0
+    image: redis:7.2.11
     container_name: redis-slave-1
     ports:
       - 6380:6379
@@ -17,7 +17,7 @@ services:
     volumes:
       - ./redis.conf:/redis.conf
   slave2:
-    image: redis:7.0
+    image: redis:7.2.11
     container_name: redis-slave-2
     ports:
       - 6381:6379
