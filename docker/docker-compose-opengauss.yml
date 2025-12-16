@@ -1,0 +1,66 @@
+services:
+  opengauss:
+    image: enmotech/opengauss:6.0.0
+    container_name: opengauss
+    privileged: true
+    restart: always
+    environment:
+      GS_USERNAME: ${GS_USERNAME:-gaussdb}
+      GS_PASSWORD: ${GS_PASSWORD:-Admin@123}
+      TZ: Asia/Shanghai
+    ports:
+      - "5432:5432"
+    volumes:
+      - opengauss_data:/var/lib/opengauss/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "su - gaussdb -c \"gs_ctl status -D /var/lib/opengauss/data\" || su - gaussdb -c \"gsql -d postgres -p 5432 -c 'select 1'\" >/dev/null 2>&1"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      my-net:
+
+  og-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.13.2
+    container_name: og_exporter
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${GS_USERNAME:-gaussdb}:${GS_PASSWORD:-Admin@123}@opengauss:5432/postgres?sslmode=disable"
+    ports:
+      - "9187:9187"
+    depends_on:
+      opengauss:
+        condition: service_healthy
+    networks:
+      - my-net
+
+  pgadmin:
+    image: dpage/pgadmin4:7.6
+    container_name: og_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@opengauss.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-Admin@123}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - opengauss
+    networks:
+      - my-net
+
+volumes:
+  pgadmin_data:
+  opengauss_data:
+
+networks:
+  my-net:
+    external: true
+    name: my-net
