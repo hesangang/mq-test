@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>体温单</title>
+  <style>
+    :root{
+      --bg:#f6f7f9;
+      --card:#fff;
+      --text:#1f2328;
+      --muted:#6a737d;
+      --border:#d0d7de;
+      --accent:#0a7;
+      --danger:#d33;
+      --pulse:#1f6feb;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"PingFang SC","Hiragino Sans GB","Microsoft Yahei",sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:1100px;margin:0 auto;padding:12px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .grow{flex:1 1 auto}
+    .label{font-size:12px;color:var(--muted);margin-bottom:6px}
+    input,select,button{height:36px;border-radius:8px;border:1px solid var(--border);padding:0 10px;font-size:14px;background:#fff}
+    input{width:100%}
+    button{background:var(--accent);color:#fff;border-color:transparent;padding:0 14px;cursor:pointer}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .btn-secondary{background:#fff;color:var(--text);border-color:var(--border)}
+    .header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .title{font-size:18px;font-weight:700}
+    .sub{font-size:12px;color:var(--muted);margin-top:6px}
+    .pill{display:inline-flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .pill span{font-size:12px;border:1px solid var(--border);border-radius:999px;padding:4px 10px;color:var(--muted)}
+    .err{color:#b42318;background:#fee4e2;border:1px solid #fecaca;border-radius:10px;padding:10px;margin-top:10px;display:none}
+    .form-grid{display:grid;grid-template-columns:.8fr 1fr auto;gap:10px;align-items:end;margin-top:12px}
+    .field{min-width:0}
+    .field select{width:100%}
+    .field-actions{min-width:92px}
+    @media (max-width:620px){
+      .form-grid{grid-template-columns:1fr 1fr}
+      .field-actions{grid-column:1 / -1}
+      .field-actions button{width:100%}
+    }
+    @media (max-width:380px){
+      .form-grid{grid-template-columns:1fr}
+    }
+    .grid-card{margin-top:12px;overflow:auto}
+    .canvas-wrap{min-width:980px}
+    canvas{display:block;background:#fff}
+    .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:10px 0 0}
+    .dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:-1px;margin-right:6px}
+    .dot.temp{background:var(--danger)}
+    .dot.pulse{background:var(--pulse)}
+    .table{min-width:980px;border-collapse:collapse;width:100%;margin-top:10px}
+    .table th,.table td{border:1px solid var(--border);padding:6px 8px;font-size:12px;vertical-align:top}
+    .table th{background:#f3f4f6;text-align:left;position:sticky;left:0}
+    .table td{min-width:84px}
+    .muted{color:var(--muted)}
+    .kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+    .kv div{font-size:12px}
+    .kv b{font-weight:600}
+    @media (max-width:640px){
+      .kv{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="header">
+        <div class="grow">
+          <div class="title">体温单</div>
+        </div>
+        <div>
+          <button id="btnPrint" class="btn-secondary" type="button">打印</button>
+        </div>
+      </div>
+
+      <div id="patient" class="pill" style="display:none"></div>
+      <div id="kv" class="kv" style="display:none"></div>
+
+      <div class="form-grid" style="display: flex; align-items: center; gap: 20px;">
+        <div class="field" style="flex: 1;">
+          <div class="label">住院号</div>
+          <input id="admitId" placeholder="请输入住院号" style="width: 100%;">
+        </div>
+        <div class="field" style="flex: 1;">
+          <div class="label">视图时长</div>
+          <select id="days" style="width: 100%;">
+            <option value="7">七天</option>
+            <option value="10">十天</option>
+          </select>
+        </div>
+        <div class="field" style="flex: 1;">
+          <div class="label">开始日期</div>
+          <input id="startDate" type="date" style="width: 100%;">
+        </div>
+        <div class="field-actions" style="align-self: flex-end;">
+          <button id="btnLoad" type="button" style="height: 38px;">显示</button>
+        </div>
+      </div>
+
+      <div id="err" class="err"></div>
+
+    <div class="card grid-card" style="margin-top:12px">
+      <div class="canvas-wrap">
+        <canvas id="chart" width="1100" height="520"></canvas>
+        <div class="legend">
+          <div><span class="dot temp"></span>体温（℃）</div>
+          <div><span class="dot pulse"></span>脉搏/心率（次/分）</div>
+          <div class="muted">时间点：2/6/10/14/18/22</div>
+        </div>
+        <table class="table" id="dailyTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TIMES = [2, 6, 10, 14, 18, 22];
+
+    const $ = (id) => document.getElementById(id);
+
+    function fmtDate(d){
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${dd}`;
+    }
+
+    function fmtMd(d){
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2,'0');
+      return `${m}-${dd}`;
+    }
+
+    function wday(d){
+      return ["日","一","二","三","四","五","六"][d.getDay()];
+    }
+
+    function parseServerDate(v){
+      if (!v) return null;
+      if (typeof v === "string") return new Date(v.replace(" ", "T"));
+      return new Date(v);
+    }
+
+    function nearestSlotIndex(date){
+      const h = date.getHours() + date.getMinutes()/60;
+      let best = 0, bestDiff = Infinity;
+      for (let i=0;i<TIMES.length;i++){
+        const diff = Math.abs(TIMES[i]-h);
+        if (diff < bestDiff){
+          best = i; bestDiff = diff;
+        }
+      }
+      return best;
+    }
+
+    function inRange(d, start, endExclusive){
+      const t = d.getTime();
+      return t >= start.getTime() && t < endExclusive.getTime();
+    }
+
+    async function postJson(url, body, token){
+      const headers = {"Content-Type":"application/json"};
+      if (token && token.trim()){
+        headers["Authorization"] = token.trim().startsWith("Bearer ") ? token.trim() : `Bearer ${token.trim()}`;
+      }
+      const res = await fetch(url, {
+        method:"POST",
+        headers,
+        body: JSON.stringify(body),
+        referrerPolicy: 'no-referrer-when-downgrade',
+        credentials: 'omit',
+        mode: 'cors'
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok){
+        const msg = json && json.message ? json.message : `HTTP ${res.status}`;
+        throw new Error(msg);
+      }
+      if (json && typeof json.code !== "undefined" && json.code !== 0){
+        throw new Error(json.message || "请求失败");
+      }
+      return json ? json.data : null;
+    }
+
+    function setErr(msg){
+      const el = $("err");
+      if (!msg){
+        el.style.display = "none";
+        el.textContent = "";
+        return;
+      }
+      el.style.display = "block";
+      el.textContent = msg;
+    }
+
+    function setPatientPills(info){
+      const kv = $("kv");
+      const rows = [];
+      if (info.patientName) rows.push(["姓名：", `${info.patientName}`]);
+       rows.push(["性别：", `${info.gender}`]);
+      if (typeof info.age === "number") rows.push(["年龄：", `${info.age}`]);
+      if (info.admitId) rows.push(["住院号：", `${info.admitId}`]);
+      if (info.wardName) rows.push(["病区：", `${info.wardName}`]);
+      if (info.branchName) rows.push(["科室：", `${info.branchName}`]);
+      if (info.admissionDate) rows.push(["入院时间", toFull(info.admissionDate)]);
+      if (info.discharge && info.discharge.date) rows.push(["出院时间：", toFull(info.discharge.date)]);
+      kv.innerHTML = rows.map(([k,v]) => `<div><b>${escapeHtml(k)}：</b>${escapeHtml(v||"")}</div>`).join("");
+      kv.style.display = rows.length ? "grid" : "none";
+    }
+
+    function toFull(v){
+      const d = parseServerDate(v);
+      if (!d) return "";
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2,'0');
+      const hh = String(d.getHours()).padStart(2,'0');
+      const mm = String(d.getMinutes()).padStart(2,'0');
+      return `${y}-${m}-${dd} ${hh}:${mm}`;
+    }
+
+    function escapeHtml(s){
+      return String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function canvasSetup(days){
+      const canvas = $("chart");
+      const baseH = 520;
+      const cellW = 20;
+      const leftW = 90;
+      const headerH = 80;
+      const chartH = 340;
+      const footerH = baseH - headerH - chartH;
+      const cols = days * TIMES.length;
+      canvas.width = leftW + cols * cellW + 20;
+      canvas.height = baseH;
+      return {canvas, ctx: canvas.getContext("2d"), cellW, leftW, headerH, chartH, footerH, cols};
+    }
+
+    function drawGrid(ctx, cfg, startDate, days){
+      const {cellW,leftW,headerH,chartH,cols} = cfg;
+      ctx.clearRect(0,0,cfg.canvas.width,cfg.canvas.height);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0,0,cfg.canvas.width,cfg.canvas.height);
+
+      ctx.fillStyle = "#111";
+      ctx.font = "12px sans-serif";
+      ctx.fillText("体温/脉搏", 10, 18);
+
+      ctx.strokeStyle = "#d0d7de";
+      ctx.lineWidth = 1;
+      for (let c=0;c<=cols;c++){
+        const x = leftW + c * cellW;
+        ctx.beginPath();
+        ctx.moveTo(x, headerH);
+        ctx.lineTo(x, headerH + chartH);
+        ctx.stroke();
+      }
+      for (let r=0;r<=28;r++){
+        const y = headerH + r * (chartH/28);
+        ctx.beginPath();
+        ctx.moveTo(leftW, y);
+        ctx.lineTo(leftW + cols * cellW, y);
+        ctx.stroke();
+      }
+      ctx.strokeStyle = "#8c959f";
+      ctx.lineWidth = 1.5;
+      for (let d=0; d<=days; d++){
+        const x = leftW + d * TIMES.length * cellW;
+        ctx.beginPath();
+        ctx.moveTo(x, headerH);
+        ctx.lineTo(x, headerH + chartH);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = "#111";
+      ctx.font = "12px sans-serif";
+      for (let d=0; d<days; d++){
+        const day = new Date(startDate.getTime() + d*86400000);
+        const x0 = leftW + d*TIMES.length*cellW;
+        ctx.fillText(fmtMd(day), x0 + 6, 18);
+        ctx.fillStyle = "#6a737d";
+        ctx.fillText(`周${wday(day)}`, x0 + 6, 36);
+        ctx.fillStyle = "#111";
+      }
+
+      ctx.fillStyle = "#6a737d";
+      ctx.font = "12px sans-serif";
+      for (let d=0; d<days; d++){
+        for (let i=0;i<TIMES.length;i++){
+          const x = leftW + (d*TIMES.length + i) * cellW + 4;
+          ctx.fillText(String(TIMES[i]), x, 66);
+        }
+      }
+
+      ctx.fillStyle = "#6a737d";
+      ctx.font = "11px sans-serif";
+      const tempMin = 35, tempMax = 42;
+      for (let t=tempMin; t<=tempMax; t++){
+        const y = mapTempY(t, cfg);
+        ctx.fillText(String(t), 10, y+4);
+      }
+
+      ctx.fillStyle = "#6a737d";
+      const pulseLabels = [0, 30, 60, 90, 120, 150, 180];
+      for (const p of pulseLabels){
+        const y = mapPulseY(p, cfg);
+        ctx.fillText(String(p), 54, y+4);
+      }
+    }
+
+    function mapTempY(value, cfg){
+      const {headerH,chartH} = cfg;
+      const min = 35, max = 42;
+      const v = Math.max(min, Math.min(max, value));
+      const ratio = (max - v) / (max - min);
+      return headerH + ratio * chartH;
+    }
+
+    function mapPulseY(value, cfg){
+      const {headerH,chartH} = cfg;
+      const min = 0, max = 180;
+      const v = Math.max(min, Math.min(max, value));
+      const ratio = (max - v) / (max - min);
+      return headerH + ratio * chartH;
+    }
+
+    function mapX(date, cfg, startDate, days){
+      const {leftW,cellW} = cfg;
+      const d0 = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+      const dd = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const dayIndex = Math.floor((dd.getTime() - d0.getTime())/86400000);
+      if (dayIndex < 0 || dayIndex >= days) return null;
+      const slot = nearestSlotIndex(date);
+      const col = dayIndex * TIMES.length + slot;
+      return leftW + col * cellW + cellW/2;
+    }
+
+    function drawSeries(ctx, cfg, items, color, yMapper, startDate, days, marker){
+      const pts = [];
+      for (const it of items || []){
+        const d = parseServerDate(it.date);
+        if (!d) continue;
+        const x = mapX(d, cfg, startDate, days);
+        if (x === null) continue;
+        const v = Number(String(it.vitalSignsValues||"").replace(/[^\d.]/g,""));
+        if (!Number.isFinite(v)) continue;
+        const y = yMapper(v, cfg);
+        pts.push({x,y,t:d.getTime()});
+      }
+      pts.sort((a,b)=>a.t-b.t);
+      if (!pts.length) return;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i=1;i<pts.length;i++){
+        ctx.lineTo(pts[i].x, pts[i].y);
+      }
+      ctx.stroke();
+      for (const p of pts){
+        if (marker === "x"){
+          ctx.beginPath();
+          ctx.moveTo(p.x-4, p.y-4);
+          ctx.lineTo(p.x+4, p.y+4);
+          ctx.moveTo(p.x+4, p.y-4);
+          ctx.lineTo(p.x-4, p.y+4);
+          ctx.stroke();
+        }else{
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 3.2, 0, Math.PI*2);
+          ctx.fill();
+        }
+      }
+    }
+
+    function renderDailyTable(recordVO, startDate, days){
+      const dayKeys = [];
+      for (let i=0;i<days;i++){
+        const d = new Date(startDate.getTime() + i*86400000);
+        dayKeys.push(fmtDate(d));
+      }
+
+      const rows = [
+        ["血糖（mmol/L）", "bloodSugar"],
+        ["血压（mmHg）", "bloodPressure"],
+        ["呼吸（次/分）", "respiration"],
+        ["疼痛评分（分）", "painGrade"],
+        ["大便次数（次）", "stoolFreq"],
+        ["体重（kg）", "weight"],
+        ["总入量（ml）", "totalIn"],
+        ["尿量（ml）", "urine"],
+        ["引流量（ml）", "drainage"],
+        ["总出量（ml）", "totalOut"],
+      ];
+
+      const byDay = (items) => {
+        const map = {};
+        for (const it of items || []){
+          const d = parseServerDate(it.date);
+          if (!d) continue;
+          const key = fmtDate(d);
+          if (!dayKeys.includes(key)) continue;
+          if (!map[key]) map[key] = [];
+          map[key].push(it);
+        }
+        for (const k of Object.keys(map)){
+          map[k].sort((a,b)=>parseServerDate(a.date)-parseServerDate(b.date));
+        }
+        return map;
+      };
+
+      const getText = (items, unitFallback) => {
+        if (!items || !items.length) return "";
+        const last = items[items.length-1];
+        const v = last.vitalSignsValues || "";
+        const u = last.vitalSignsUnit || unitFallback || "";
+        return `${v}${u ? " "+u : ""}`.trim();
+      };
+
+      const maps = {
+        bloodSugar: byDay(recordVO.bloodSugar),
+        systolic: byDay(recordVO.systolicPressure),
+        diastolic: byDay(recordVO.diastolicPressure),
+        respiration: byDay(recordVO.respiration),
+        painGrade: byDay(recordVO.painGrade),
+        stoolFreq: byDay(recordVO.stoolFreq),
+        weight: byDay(recordVO.weight),
+        totalIn: byDay(recordVO.totalIn),
+        urine: byDay(recordVO.urine),
+        drainage: byDay(recordVO.drainage),
+        totalOut: byDay(recordVO.totalOut),
+      };
+
+      const table = $("dailyTable");
+      const head = `<tr><th>项目</th>${dayKeys.map(k=>{
+        const d = new Date(k+"T00:00:00");
+        return `<td>${escapeHtml(fmtMd(d))}<div class="muted">周${escapeHtml(wday(d))}</div></td>`;
+      }).join("")}</tr>`;
+
+      const body = rows.map(([label,key])=>{
+        if (key === "bloodPressure"){
+          return `<tr><th>${escapeHtml(label)}</th>${dayKeys.map(k=>{
+            const s = getText(maps.systolic[k], "mmHg");
+            const d = getText(maps.diastolic[k], "mmHg");
+            const t = (s || d) ? `${escapeHtml((s||"").split(" ")[0])}/${escapeHtml((d||"").split(" ")[0])}` : "";
+            return `<td>${t}</td>`;
+          }).join("")}</tr>`;
+        }
+        return `<tr><th>${escapeHtml(label)}</th>${dayKeys.map(k=>{
+          const items = maps[key][k];
+          return `<td>${escapeHtml(getText(items))}</td>`;
+        }).join("")}</tr>`;
+      }).join("");
+
+      table.innerHTML = head + body;
+    }
+
+    function pickDefaultStart(info){
+      const admission = info && info.admissionDate ? parseServerDate(info.admissionDate) : null;
+      if (admission){
+        const d = new Date(admission.getFullYear(), admission.getMonth(), admission.getDate());
+        return d;
+      }
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    }
+
+    async function load(){
+      setErr("");
+      $("btnLoad").disabled = true;
+      try{
+        const token = "caachis|XT0001";
+        const admitId = ($("admitId").value || "").trim();
+        if (!admitId) throw new Error("缺少住院号 admitId（请通过URL参数 ?admitId=xxx 传入）");
+        const days = Number($("days").value);
+
+        const dto = {admitId};
+        const info = await postJson("/api/mnis/P302/1009", dto, token);
+        if (!info) throw new Error("未获取到患者信息");
+        setPatientPills(info);
+
+        const start = $("startDate").value ? new Date($("startDate").value+"T00:00:00") : pickDefaultStart(info);
+        if (!$("startDate").value) $("startDate").value = fmtDate(start);
+        const endExclusive = new Date(start.getTime() + days*86400000);
+
+        const record = await postJson("/api/mnis/P302/1010", dto, token) || {};
+        const cfg = canvasSetup(days);
+        drawGrid(cfg.ctx, cfg, start, days);
+
+        drawSeries(cfg.ctx, cfg, (record.bodyTemperature||[]).filter(it=>{
+          const d = parseServerDate(it.date);
+          return d && inRange(d, start, endExclusive);
+        }), getComputedStyle(document.documentElement).getPropertyValue("--danger").trim(), mapTempY, start, days, "o");
+
+        drawSeries(cfg.ctx, cfg, (record.pulse||[]).filter(it=>{
+          const d = parseServerDate(it.date);
+          return d && inRange(d, start, endExclusive);
+        }), getComputedStyle(document.documentElement).getPropertyValue("--pulse").trim(), mapPulseY, start, days, "x");
+
+        renderDailyTable(record, start, days);
+      }catch(e){
+        setErr(e && e.message ? e.message : "加载失败");
+      }finally{
+        $("btnLoad").disabled = false;
+      }
+    }
+
+    $("btnLoad").addEventListener("click", load);
+    $("btnPrint").addEventListener("click", () => window.print());
+    $("days").addEventListener("change", () => {
+      const canvas = $("chart");
+      canvas.width = canvas.width;
+    });
+
+    (function init(){
+      const url = new URL(window.location.href);
+      const admitId = url.searchParams.get("admitId");
+      if (admitId) $("admitId").value = admitId;
+    })();
+  </script>
+</body>
+</html>
